@@ -1,0 +1,11 @@
+*.class
+*.jar
+*.war
+*.classpath
+*.project
+/build
+/.settings
+/.gradle
+*.md~
+*.gitignore~
+/bin/
