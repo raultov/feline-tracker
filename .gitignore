@@ -9,3 +9,4 @@
 *.md~
 *.gitignore~
 /bin/
+/gradle/
