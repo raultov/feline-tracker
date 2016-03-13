@@ -10,3 +10,4 @@
 *.gitignore~
 /bin/
 /gradle/
+/gradle/wrapper/
