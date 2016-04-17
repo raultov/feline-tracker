@@ -72,7 +72,6 @@ public class OAuth2ServerConfig {
 			 			.scopes("general")
                         .secret("client-with-refresh-token-secret")
                         .and()
-
             ;
         }
 

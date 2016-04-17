@@ -5,9 +5,13 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.provisioning.UserDetailsManager;
 import org.springframework.stereotype.Service;
 
+import ayoza.com.feline.api.managers.UserServicesMgr;
+
 @Service
 public class MyUserDetailsManager implements UserDetailsManager {
 
+	private UserServicesMgr UserServicesMgr;
+	
 	@Override
 	public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
 		// TODO Auto-generated method stub

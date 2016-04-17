@@ -24,6 +24,7 @@ ext {
     oauth2Version = '2.0.9.RELEASE'
     springTxVersion = '4.2.5.RELEASE'
     felineTrackerModelVersion = '1.0'
+    hibernateVersion = '5.1.0.Final'
 }
 
 war {
@@ -51,7 +52,17 @@ dependencies {
 	compile "org.springframework.security.oauth:spring-security-oauth2:$oauth2Version"
 	compile "org.springframework:spring-tx:$springTxVersion"
 	
-	compile "com.ayoza.feline-tracker-lib:feline-tracker-model:$felineTrackerModelVersion"
+	compile "org.hibernate:hibernate-core:$hibernateVersion"
+	
+	// No queremos que nos traiga el wsia model a nuestro proyecto rest
+    runtime ("com.ayoza.feline-tracker-lib:feline-tracker-core:$felineTrackerModelVersion") {
+            exclude module: 'feline-tracker-model'
+    }
+   
+    runtime "com.ayoza.feline-tracker-lib:feline-tracker-model:$felineTrackerModelVersion"
+	
+	compile "com.ayoza.feline-tracker-lib:feline-tracker-api:$felineTrackerModelVersion"
+	//runtime "com.ayoza.feline-tracker-lib:feline-tracker-core:$felineTrackerModelVersion"
 	
 	providedRuntime('org.springframework.boot:spring-boot-starter-tomcat')
 	testCompile('org.springframework.boot:spring-boot-starter-test') 
