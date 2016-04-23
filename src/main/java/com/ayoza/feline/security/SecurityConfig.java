@@ -1,5 +1,7 @@
 package com.ayoza.feline.security;
 
+import javax.sql.DataSource;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -14,8 +16,10 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.oauth2.provider.token.TokenStore;
-import org.springframework.security.oauth2.provider.token.store.InMemoryTokenStore;
+import org.springframework.security.oauth2.provider.token.store.JdbcTokenStore;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
+
+import ayoza.com.feline.api.managers.UserServicesMgr;
 
 
 @Configuration
@@ -23,7 +27,10 @@ import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
 	
 	@Autowired
-	private MyUserDetailsManager myUserDetailsManager;
+	private UserServicesMgr userServicesMgr;
+	
+	@Autowired
+	private DataSource dataSource;
 
     /**
      * Configures how users will be authenticated.
@@ -36,7 +43,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     	Md5PasswordEncoder passwordEncoder = new Md5PasswordEncoder();
     	daoAuthenticationProvider.setPasswordEncoder(passwordEncoder);
     	
-    	daoAuthenticationProvider.setUserDetailsService(myUserDetailsManager);
+    	daoAuthenticationProvider.setUserDetailsService(userServicesMgr);
     	
         // @formatter:off
     	auth.authenticationProvider(daoAuthenticationProvider);
@@ -84,9 +91,9 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     
 	@Bean
 	public TokenStore tokenStore() {
-		//tokenStore = new JdbcTokenStore(wsiaDataSource); 
-	    //return tokenStore;
-		return new InMemoryTokenStore();
+		TokenStore tokenStore = new JdbcTokenStore(dataSource); 
+	    return tokenStore;
+		//return new InMemoryTokenStore();
 	}
 
     /**
