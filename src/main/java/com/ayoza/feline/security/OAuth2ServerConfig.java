@@ -70,7 +70,7 @@ public class OAuth2ServerConfig {
 			 			.authorizedGrantTypes("password", "client_credentials", "refresh_token")
 			 			.authorities("ROLE_CLIENT")
 			 			.scopes("general")
-                        .secret("client-with-refresh-token-secret")
+                        .secret("client-with-refresh-token-secret") // FIXME Change this password in production environment
                         .and()
             ;
         }
