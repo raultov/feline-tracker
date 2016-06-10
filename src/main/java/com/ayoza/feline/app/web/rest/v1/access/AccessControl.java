@@ -4,10 +4,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
 import ayoza.com.feline.api.entities.common.ApiUser;
-import ayoza.com.feline.api.exceptions.UserServicesException;
 import ayoza.com.feline.api.managers.UserServicesMgr;
 
 @Service
@@ -39,7 +39,7 @@ public class AccessControl {
     	ApiUser user;
 		try {
 			user = userServicesMgr.getApiUserByUsername(username);
-		} catch (UserServicesException e) {
+		} catch (UsernameNotFoundException e) {
 			return null;
 		}
 		
