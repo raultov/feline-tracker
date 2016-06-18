@@ -1,4 +1,4 @@
-package com.ayoza.feline.app.web.rest.utils.v1;
+package com.ayoza.feline.web.rest.v1.exceptions.handler;
 
 import org.apache.log4j.Logger;
 import org.springframework.http.HttpHeaders;

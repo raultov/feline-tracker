@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.ayoza.feline.app.web.rest.v1.access.AccessControl;
+import com.ayoza.feline.web.rest.v1.exceptions.ParserTrackerException;
 
 import ayoza.com.feline.api.entities.common.ApiUser;
 import ayoza.com.feline.api.entities.tracker.ApiTraPoint;
@@ -40,9 +41,9 @@ public class TrackV1Ctrl {
 	@RequestMapping(value = "", method = POST, produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE, headers="Accept=*/*")
     @ResponseBody
     public ApiTraPoint addPointV1(
-    								@RequestParam(value="latitude", required=true)  Double latitude,
-    								@RequestParam(value="longitude", required=true)  Double longitude,
-    								@RequestParam(value="speed", required=false)  Double speedKmsHour,
+    								@RequestParam(value="latitude", required=true)  String ggaLatitude, // 4025.7313,N
+    								@RequestParam(value="longitude", required=true)  String ggaLongitude, // 00338.5613,W
+    								@RequestParam(value="accuracy", required=false)  Double accuracy,
     								@RequestParam(value="altitude", required=false)  Double altitude
     							) throws FelineApiException {
 		
@@ -68,9 +69,70 @@ public class TrackV1Ctrl {
 										new Exception(TrackerException.ERROR_TRACK_COULD_NOT_BE_CREATED_MSG));
 		}
 		
-		ApiTraPoint point = trackerMgr.addPointToRoute(route, latitude, longitude, speedKmsHour, altitude);
+		Double latitude = extractLatitude(ggaLatitude);
+		Double longitude = extractLongitude(ggaLongitude);
+		
+		ApiTraPoint point = trackerMgr.addPointToRoute(route, latitude, longitude, accuracy, altitude);
 		
     	return point;
 	}
+	
+	private Double extractLatitude(String ggaLatitude) throws ParserTrackerException {
+		
+		Double degrees = 0.0, minutes = 0.0;
+		
+		try {
+			degrees = new Double(ggaLatitude.substring(0, 2));
+			minutes = new Double(ggaLatitude.substring(2, ggaLatitude.length()-1));
+		} catch(NumberFormatException nfe) {
+			throw new ParserTrackerException(ParserTrackerException.WRONG_GPGGA_FORMAT,
+												ParserTrackerException.WRONG_GPGGA_FORMAT_MSG,
+												nfe);
+		}
+		
+		double sign = ggaLatitude.charAt(ggaLatitude.length()-1) == 'N' ? 1.0 : -1.0;
+		
+		minutes = minutes / 60.0;
+		
+		return (degrees + minutes) * sign;
+	}
+	
+	private Double extractLongitude(String ggaLongitude) throws ParserTrackerException {
+		
+		Double degrees = 0.0, minutes = 0.0;
+		
+		try {
+			degrees = new Double(ggaLongitude.substring(0, 3));
+			minutes = new Double(ggaLongitude.substring(3, ggaLongitude.length()-1));
+		} catch(NumberFormatException | IndexOutOfBoundsException nfe) {
+			throw new ParserTrackerException(ParserTrackerException.WRONG_GPGGA_FORMAT,
+												ParserTrackerException.WRONG_GPGGA_FORMAT_MSG,
+												nfe);
+		}
+		
+		double sign = ggaLongitude.charAt(ggaLongitude.length()-1) == 'E' ? 1.0 : -1.0;
+		
+		minutes = minutes / 60.0;
+		
+		return (degrees + minutes) * sign;
+	}	
 
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
