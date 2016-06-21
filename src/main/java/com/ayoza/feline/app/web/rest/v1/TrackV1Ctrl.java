@@ -1,11 +1,14 @@
 package com.ayoza.feline.app.web.rest.v1;
 
 import static org.springframework.web.bind.annotation.RequestMethod.POST;
+import static org.springframework.web.bind.annotation.RequestMethod.GET;
 
 import java.util.Date;
+import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
@@ -76,6 +79,45 @@ public class TrackV1Ctrl {
 		
     	return point;
 	}
+	
+	@RequestMapping(value = "", method = GET, produces = MediaType.APPLICATION_JSON_VALUE, headers="Accept=*/*")
+    @ResponseBody
+    public List<ApiTraRoute> getListOfRoutesV1() throws FelineApiException {
+		
+		ApiUser apiUser = accessControl.getUserFromSecurityContext();
+
+		if (apiUser == null) {
+			throw new UserServicesException(UserServicesException.ERROR_USER_NOT_FOUND, 
+											UserServicesException.ERROR_USER_NOT_FOUND_MSG, 
+											new Exception(UserServicesException.ERROR_USER_NOT_FOUND_MSG));
+		}
+		
+		return trackerMgr.getRouteByApiTraUser(apiUser.getUserId());
+	}
+	
+	@RequestMapping(value = "/{trackId}/points", method = GET, produces = MediaType.APPLICATION_JSON_VALUE, headers="Accept=*/*")
+    @ResponseBody
+    public List<ApiTraPoint> getListOfPointsByRouteV1(@PathVariable(value="trackId") Integer trackId) throws FelineApiException {
+		
+		ApiUser apiUser = accessControl.getUserFromSecurityContext();
+
+		if (apiUser == null) {
+			throw new UserServicesException(UserServicesException.ERROR_USER_NOT_FOUND, 
+											UserServicesException.ERROR_USER_NOT_FOUND_MSG, 
+											new Exception(UserServicesException.ERROR_USER_NOT_FOUND_MSG));
+		}
+		
+		return trackerMgr.getPointsByApiTraRouteIdAndUserId(trackId, apiUser.getUserId());
+	}	
+	
+	/*
+		 _   _ _   _ _ _ _   _           
+		| | | | |_(_) (_) |_(_) ___  ___ 
+		| | | | __| | | | __| |/ _ \/ __|
+		| |_| | |_| | | | |_| |  __/\__ \
+		 \___/ \__|_|_|_|\__|_|\___||___/
+		                                 
+	*/
 	
 	private Double extractLatitude(String ggaLatitude) throws ParserTrackerException {
 		
