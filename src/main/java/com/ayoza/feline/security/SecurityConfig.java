@@ -102,7 +102,11 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     @Override
     protected void configure(HttpSecurity http) throws Exception {
     	
+    	//CorsAwareAuthenticationFilter ca = new CorsAwareAuthenticationFilter(authenticationManagerBean());
+    	
         http
+    		//.addFilterBefore(ca,
+    		//		CorsAwareAuthenticationFilter.class)       
         	.sessionManagement()
     			.sessionCreationPolicy(SessionCreationPolicy.NEVER)
     			.and()
@@ -121,7 +125,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
             	//.and()          	
 //            .authorizeRequests()
 //                .antMatchers(HttpMethod.POST, "/v1/users").permitAll()
-//            	.and()
+//            	.and()         		
 //            .authorizeRequests()
 //                .antMatchers(HttpMethod.PUT, "/v1/users/confirm").permitAll()
 //            	.and()            	
