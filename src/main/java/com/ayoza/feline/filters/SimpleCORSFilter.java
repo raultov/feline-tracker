@@ -27,8 +27,8 @@ public class SimpleCORSFilter implements Filter {
 	public void doFilter(ServletRequest req, ServletResponse res, FilterChain chain) throws IOException, ServletException {
 	
 	    HttpServletRequest request = (HttpServletRequest) req;
-	    String url = getFullURL(request);
-	    if (url.startsWith("/oauth/token", url.length() - 12)) {
+	   // String url = getFullURL(request);
+	   // if (url.startsWith("/oauth/token", url.length() - 12)) {
 	
 		    HttpServletResponse response = (HttpServletResponse) res;
 		
@@ -43,9 +43,9 @@ public class SimpleCORSFilter implements Filter {
 		    } else {
 		        chain.doFilter(req, res);
 		    }
-	    } else {
+	    /*} else {
 	    	chain.doFilter(req, res);
-	    }
+	    }*/
 	}
 
 	@Override
@@ -55,7 +55,7 @@ public class SimpleCORSFilter implements Filter {
 	@Override
 	public void destroy() {
 	}
-
+/*
 	private static String getFullURL(HttpServletRequest request) {
 	    StringBuffer requestURL = request.getRequestURL();
 	    String queryString = request.getQueryString();
@@ -65,5 +65,5 @@ public class SimpleCORSFilter implements Filter {
 	    } else {
 	        return requestURL.append('?').append(queryString).toString();
 	    }
-	}
+	}*/
 }
