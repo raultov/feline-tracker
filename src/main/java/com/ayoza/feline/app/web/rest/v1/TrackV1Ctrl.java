@@ -7,6 +7,7 @@ import java.util.Date;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -82,7 +83,9 @@ public class TrackV1Ctrl {
 	
 	@RequestMapping(value = "", method = GET, produces = MediaType.APPLICATION_JSON_VALUE, headers="Accept=*/*")
     @ResponseBody
-    public List<ApiTraRoute> getListOfRoutesV1() throws FelineApiException {
+    public List<ApiTraRoute> getListOfRoutesV1(
+    						@RequestParam(value="startDate", required=true)  @DateTimeFormat(pattern = "yyyyMMddHHmmss") Date startDate
+    					) throws FelineApiException {
 		
 		ApiUser apiUser = accessControl.getUserFromSecurityContext();
 
@@ -92,7 +95,7 @@ public class TrackV1Ctrl {
 											new Exception(UserServicesException.ERROR_USER_NOT_FOUND_MSG));
 		}
 		
-		return trackerMgr.getRouteByApiTraUser(apiUser.getUserId());
+		return trackerMgr.getRouteByApiTraUserAndFromStarDate(apiUser.getUserId(), startDate);
 	}
 	
 	@RequestMapping(value = "/{trackId}/points", method = GET, produces = MediaType.APPLICATION_JSON_VALUE, headers="Accept=*/*")
