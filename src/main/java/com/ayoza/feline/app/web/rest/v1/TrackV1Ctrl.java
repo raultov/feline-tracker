@@ -84,7 +84,11 @@ public class TrackV1Ctrl {
 	@RequestMapping(value = "", method = GET, produces = MediaType.APPLICATION_JSON_VALUE, headers="Accept=*/*")
     @ResponseBody
     public List<ApiTraRoute> getListOfRoutesV1(
-    						@RequestParam(value="startDate", required=true)  @DateTimeFormat(pattern = "yyyyMMddHHmmss") Date startDate
+    											@RequestParam(value="startDateFrom")  @DateTimeFormat(pattern = "yyyyMMddHHmmss") Date startDateFrom,
+    											@RequestParam(value="startDateTo")  @DateTimeFormat(pattern = "yyyyMMddHHmmss") Date startDateTo,
+    											@RequestParam(value="orderAscDesc") String orderAscDesc,
+    											@RequestParam(value="page") Integer page,
+    											@RequestParam(value="numRegistersPerPage") Integer numRegistersPerPage
     					) throws FelineApiException {
 		
 		ApiUser apiUser = accessControl.getUserFromSecurityContext();
@@ -95,12 +99,20 @@ public class TrackV1Ctrl {
 											new Exception(UserServicesException.ERROR_USER_NOT_FOUND_MSG));
 		}
 		
-		return trackerMgr.getRouteByApiTraUserAndFromStarDate(apiUser.getUserId(), startDate);
+		validateGetTracks(startDateFrom, startDateTo,
+							orderAscDesc,
+								page, numRegistersPerPage);
+		
+		
+		return trackerMgr.getRouteByApiTraUserAndFromStarDate(apiUser.getUserId(), 
+																startDateFrom, startDateTo,
+																orderAscDesc,
+																page, numRegistersPerPage);
 	}
 	
 	@RequestMapping(value = "/{trackId}/points", method = GET, produces = MediaType.APPLICATION_JSON_VALUE, headers="Accept=*/*")
     @ResponseBody
-    public List<ApiTraPoint> getListOfPointsByRouteV1(@PathVariable(value="trackId") Integer trackId) throws FelineApiException {
+    public List<ApiTraPoint> getListOfPointsByRouteV1(	@PathVariable(value="trackId") Integer trackId) throws FelineApiException {
 		
 		ApiUser apiUser = accessControl.getUserFromSecurityContext();
 
@@ -109,9 +121,61 @@ public class TrackV1Ctrl {
 											UserServicesException.ERROR_USER_NOT_FOUND_MSG, 
 											new Exception(UserServicesException.ERROR_USER_NOT_FOUND_MSG));
 		}
-		
+
 		return trackerMgr.getPointsByApiTraRouteIdAndUserId(trackId, apiUser.getUserId());
 	}	
+	
+	/*
+		__     __    _ _     _       _   _                 
+		\ \   / /_ _| (_) __| | __ _| |_(_) ___  _ __  ___ 
+		 \ \ / / _` | | |/ _` |/ _` | __| |/ _ \| '_ \/ __|
+		  \ V / (_| | | | (_| | (_| | |_| | (_) | | | \__ \
+		   \_/ \__,_|_|_|\__,_|\__,_|\__|_|\___/|_| |_|___/
+		                                                   
+	 */
+	
+	private void validateGetTracks(Date startDateFrom, Date startDateTo,
+											String orderAscDesc,
+												Integer page, Integer numRegistersPerPage) throws FelineApiException {
+		
+		if (startDateFrom != null && startDateTo != null) {
+			if (startDateFrom.after(startDateTo)) {
+				throw new ParserTrackerException(ParserTrackerException.WRONG_DATES_VALUES, 
+													ParserTrackerException.WRONG_DATES_VALUES_MSG, 
+													new Exception(ParserTrackerException.WRONG_DATES_VALUES_MSG));
+			}
+		}
+		
+		if (orderAscDesc == null || orderAscDesc.isEmpty()) {
+			throw new ParserTrackerException(ParserTrackerException.ERROR_ORDER_CANNOT_BE_EMPTY, 
+													ParserTrackerException.ERROR_ORDER_CANNOT_BE_EMPTY_MSG, 
+													new Exception(ParserTrackerException.ERROR_ORDER_CANNOT_BE_EMPTY_MSG));	
+		} else if (!orderAscDesc.equals("ASC") && !orderAscDesc.equals("DESC")) {
+				throw new ParserTrackerException(ParserTrackerException.WRONG_ORDER_VALUE, 
+													ParserTrackerException.WRONG_ORDER_VALUE_MSG, 
+													new Exception(ParserTrackerException.WRONG_ORDER_VALUE_MSG));
+		}
+		
+		if (page == null) {
+			throw new ParserTrackerException(ParserTrackerException.ERROR_PAGE_CANNOT_BE_EMPTY, 
+													ParserTrackerException.ERROR_PAGE_CANNOT_BE_EMPTY_MSG, 
+													new Exception(ParserTrackerException.ERROR_PAGE_CANNOT_BE_EMPTY_MSG));			
+		} else if (page < 0) {
+			throw new ParserTrackerException(ParserTrackerException.WRONG_PAGE_NEGATIVE_VALUE, 
+													ParserTrackerException.WRONG_PAGE_NEGATIVE_VALUE_MSG, 
+													new Exception(ParserTrackerException.WRONG_PAGE_NEGATIVE_VALUE_MSG));
+		}
+		
+		if (numRegistersPerPage == null) {
+			throw new ParserTrackerException(ParserTrackerException.ERROR_REGISTERS_PER_PAGE_CANNOT_BE_EMPTY, 
+													ParserTrackerException.ERROR_REGISTERS_PER_PAGE_CANNOT_BE_EMPTY_MSG, 
+													new Exception(ParserTrackerException.ERROR_REGISTERS_PER_PAGE_CANNOT_BE_EMPTY_MSG));
+		} else if (numRegistersPerPage < 0) {
+			throw new ParserTrackerException(ParserTrackerException.WRONG_REGISTERS_PER_PAGE_NEGATIVE_VALUE, 
+													ParserTrackerException.WRONG_REGISTERS_PER_PAGE_NEGATIVE_VALUE_MSG, 
+													new Exception(ParserTrackerException.WRONG_REGISTERS_PER_PAGE_NEGATIVE_VALUE_MSG));
+		}
+	}
 	
 	/*
 		 _   _ _   _ _ _ _   _           
