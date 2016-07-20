@@ -1,7 +1,7 @@
 package com.ayoza.feline.app.web.rest.v1;
 
-import static org.springframework.web.bind.annotation.RequestMethod.POST;
 import static org.springframework.web.bind.annotation.RequestMethod.GET;
+import static org.springframework.web.bind.annotation.RequestMethod.POST;
 
 import java.util.Date;
 import java.util.List;
@@ -30,6 +30,8 @@ import ayoza.com.feline.api.utils.DateUtils;
 @RestController
 @RequestMapping(value = "/v1/tracks")
 public class TrackV1Ctrl {
+	
+	private static final double MIN_DIFF = 0.0002;
 	
 	private TrackerMgr trackerMgr;
 	
@@ -76,9 +78,22 @@ public class TrackV1Ctrl {
 		Double latitude = extractLatitude(ggaLatitude);
 		Double longitude = extractLongitude(ggaLongitude);
 		
-		ApiTraPoint point = trackerMgr.addPointToRoute(route, latitude, longitude, accuracy, altitude);
+		ApiTraPoint lastPoint = trackerMgr.getLastPoint(route.getApiTraRouteId());
+		if (lastPoint != null) {
+			if (lastPoint.getLatitude() - latitude < MIN_DIFF &&
+					lastPoint.getLongitude() - longitude < MIN_DIFF) {
+				// It is not worth to create a new point, it is better to update the last one inserted
+				ApiTraPoint apiTraPoint = new ApiTraPoint();
+				apiTraPoint.setAccuracy(accuracy);
+				apiTraPoint.setAltitude(altitude);
+				apiTraPoint.setLatitude(latitude);
+				apiTraPoint.setLongitude(longitude);
+				apiTraPoint.setWhen(new Date());
+				return trackerMgr.updatePoint(lastPoint.getApiTraPointId(), apiTraPoint);
+			}
+		}
 		
-    	return point;
+		return trackerMgr.addPointToRoute(route, latitude, longitude, accuracy, altitude);
 	}
 	
 	@RequestMapping(value = "", method = GET, produces = MediaType.APPLICATION_JSON_VALUE, headers="Accept=*/*")
@@ -112,7 +127,9 @@ public class TrackV1Ctrl {
 	
 	@RequestMapping(value = "/{trackId}/points", method = GET, produces = MediaType.APPLICATION_JSON_VALUE, headers="Accept=*/*")
     @ResponseBody
-    public List<ApiTraPoint> getListOfPointsByRouteV1(	@PathVariable(value="trackId") Integer trackId) throws FelineApiException {
+    public List<ApiTraPoint> getListOfPointsByRouteV1(
+    													@PathVariable(value="trackId") Integer trackId
+    												) throws FelineApiException {
 		
 		ApiUser apiUser = accessControl.getUserFromSecurityContext();
 
@@ -124,6 +141,24 @@ public class TrackV1Ctrl {
 
 		return trackerMgr.getPointsByApiTraRouteIdAndUserId(trackId, apiUser.getUserId());
 	}	
+	
+	@RequestMapping(value = "/{trackId}/center", method = GET, produces = MediaType.APPLICATION_JSON_VALUE, headers="Accept=*/*")
+    @ResponseBody
+    public ApiTraPoint getRouteV1(
+    										@PathVariable(value="trackId") Integer trackId
+    								) throws FelineApiException {
+		
+		ApiUser apiUser = accessControl.getUserFromSecurityContext();
+
+		if (apiUser == null) {
+			throw new UserServicesException(UserServicesException.ERROR_USER_NOT_FOUND, 
+											UserServicesException.ERROR_USER_NOT_FOUND_MSG, 
+											new Exception(UserServicesException.ERROR_USER_NOT_FOUND_MSG));
+		}
+		
+		List<ApiTraPoint> list = trackerMgr.getPointsByApiTraRouteIdAndUserId(trackId, apiUser.getUserId());
+		return getCentralApiTraPoint(list);
+	}
 	
 	/*
 		__     __    _ _     _       _   _                 
@@ -225,6 +260,47 @@ public class TrackV1Ctrl {
 		
 		return (degrees + minutes) * sign;
 	}	
+	
+
+	private static ApiTraPoint getCentralApiTraPoint(List<ApiTraPoint> geoCoordinates) {
+		
+		if (geoCoordinates == null || geoCoordinates.size() == 0) {
+            return null;
+        }
+		
+        if (geoCoordinates.size() == 1) {
+            return geoCoordinates.get(0);
+        }
+
+        double x = 0;
+        double y = 0;
+        double z = 0;
+
+        for (ApiTraPoint apiTraPoint : geoCoordinates) {
+            double latitude = apiTraPoint.getLatitude() * Math.PI / 180;
+            double longitude = apiTraPoint.getLongitude() * Math.PI / 180;
+
+            x += Math.cos(latitude) * Math.cos(longitude);
+            y += Math.cos(latitude) * Math.sin(longitude);
+            z += Math.sin(latitude);
+        }
+
+        int total = geoCoordinates.size();
+
+        x = x / total;
+        y = y / total;
+        z = z / total;
+
+        double centralLongitude = Math.atan2(y, x);
+        double centralSquareRoot = Math.sqrt(x * x + y * y);
+        double centralLatitude = Math.atan2(z, centralSquareRoot);
+        
+        ApiTraPoint result = new ApiTraPoint();
+        result.setLatitude(centralLatitude * 180 / Math.PI);
+        result.setLongitude(centralLongitude * 180 / Math.PI);
+
+        return result;
+    }
 
 }
 

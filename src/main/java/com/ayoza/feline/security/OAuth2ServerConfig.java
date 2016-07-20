@@ -45,6 +45,7 @@ public class OAuth2ServerConfig {
                 
                 .antMatchers(HttpMethod.POST, "/v1/tracks").access("#oauth2.hasScope('general') and hasRole('ROLE_TRA_USER')")
                 .antMatchers(HttpMethod.GET, "/v1/tracks").access("#oauth2.hasScope('general') and hasRole('ROLE_APP_USER')")
+                .antMatchers(HttpMethod.GET, "/v1/tracks/*/center").access("#oauth2.hasScope('general') and hasRole('ROLE_APP_USER')")
                 .antMatchers(HttpMethod.GET, "/v1/tracks/*/points").access("#oauth2.hasScope('general') and hasRole('ROLE_APP_USER')")
                 
                 .antMatchers(HttpMethod.GET, "/v1/users").access("#oauth2.hasScope('general') and hasRole('ROLE_APP_USER')")
