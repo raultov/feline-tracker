@@ -2,6 +2,8 @@ package com.ayoza.feline.app.web.rest.v1;
 
 import static org.springframework.web.bind.annotation.RequestMethod.GET;
 
+import java.util.Optional;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -10,8 +12,8 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.ayoza.feline.app.web.rest.v1.access.AccessControl;
 
-import ayoza.com.feline.api.entities.app.ApiAppUser;
-import ayoza.com.feline.api.entities.common.ApiUser;
+import ayoza.com.feline.api.app.dto.AppUserDTO;
+import ayoza.com.feline.api.entities.common.dto.UserDTO;
 import ayoza.com.feline.api.exceptions.FelineApiException;
 import ayoza.com.feline.api.exceptions.UserServicesException;
 import ayoza.com.feline.api.managers.UserServicesMgr;
@@ -32,17 +34,15 @@ public class UserV1Ctrl {
 	
 	@RequestMapping(value = "", method = GET, produces = MediaType.APPLICATION_JSON_VALUE, headers="Accept=*/*")
     @ResponseBody
-    public ApiAppUser getAppUserV1() throws FelineApiException {
+    public AppUserDTO getAppUserV1() throws FelineApiException {
 		
-		ApiUser apiUser = accessControl.getUserFromSecurityContext();
+		Optional<UserDTO> userDTO = accessControl.getUserFromSecurityContext();
 		
-		ApiAppUser apiAppUser = userServicesMgr.getApiUserByUserId(apiUser.getUserId());
-		if (apiAppUser == null) {
-			throw new UserServicesException(UserServicesException.ERROR_USER_NOT_FOUND, 
-											UserServicesException.ERROR_USER_NOT_FOUND_MSG, 
-											new Exception(UserServicesException.ERROR_USER_NOT_FOUND_MSG));
+		AppUserDTO appUserDTO = userServicesMgr.getApiUserByUserId(userDTO.get().getUserId());
+		if (appUserDTO == null) {
+			throw UserServicesException.Exceptions.USER_NOT_FOUND.getException();
 		}
 		
-		return apiAppUser;
+		return appUserDTO;
 	}
 }

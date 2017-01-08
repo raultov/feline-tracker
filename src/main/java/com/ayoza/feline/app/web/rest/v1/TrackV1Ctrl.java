@@ -1,14 +1,16 @@
 package com.ayoza.feline.app.web.rest.v1;
 
+import static org.springframework.http.MediaType.APPLICATION_FORM_URLENCODED_VALUE;
+import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 import static org.springframework.web.bind.annotation.RequestMethod.GET;
 import static org.springframework.web.bind.annotation.RequestMethod.POST;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
-import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -18,11 +20,10 @@ import org.springframework.web.bind.annotation.RestController;
 import com.ayoza.feline.app.web.rest.v1.access.AccessControl;
 import com.ayoza.feline.web.rest.v1.exceptions.ParserTrackerException;
 
-import ayoza.com.feline.api.entities.common.ApiUser;
-import ayoza.com.feline.api.entities.tracker.ApiTraPoint;
-import ayoza.com.feline.api.entities.tracker.ApiTraRoute;
+import ayoza.com.feline.api.entities.common.dto.UserDTO;
+import ayoza.com.feline.api.entities.tracker.dto.PointDTO;
+import ayoza.com.feline.api.entities.tracker.dto.RouteDTO;
 import ayoza.com.feline.api.exceptions.FelineApiException;
-import ayoza.com.feline.api.exceptions.TrackerException;
 import ayoza.com.feline.api.exceptions.UserServicesException;
 import ayoza.com.feline.api.managers.tracker.TrackerMgr;
 import ayoza.com.feline.api.utils.DateUtils;
@@ -44,61 +45,46 @@ public class TrackV1Ctrl {
 		this.accessControl = accessControl;
 	}
 	
-	@RequestMapping(value = "", method = POST, produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE, headers="Accept=*/*")
+	@RequestMapping(value = "", method = POST, produces = APPLICATION_JSON_VALUE, consumes = APPLICATION_FORM_URLENCODED_VALUE, headers="Accept=*/*")
     @ResponseBody
-    public ApiTraPoint addPointV1(
-    								@RequestParam(value="latitude", required=true)  String ggaLatitude, // 4025.7313,N
-    								@RequestParam(value="longitude", required=true)  String ggaLongitude, // 00338.5613,W
-    								@RequestParam(value="accuracy", required=false)  Double accuracy,
-    								@RequestParam(value="altitude", required=false)  Double altitude
+    public PointDTO addPointV1(
+								@RequestParam(value="latitude", required=true)  String ggaLatitude, // 4025.7313,N
+								@RequestParam(value="longitude", required=true)  String ggaLongitude, // 00338.5613,W
+								@RequestParam(value="accuracy", required=false)  Double accuracy,
+								@RequestParam(value="altitude", required=false)  Double altitude
     							) throws FelineApiException {
 		
-		ApiUser apiUser = accessControl.getUserFromSecurityContext();
-
-		if (apiUser == null) {
-			throw new UserServicesException(UserServicesException.ERROR_USER_NOT_FOUND, 
-											UserServicesException.ERROR_USER_NOT_FOUND_MSG, 
-											new Exception(UserServicesException.ERROR_USER_NOT_FOUND_MSG));
-		}
+		UserDTO userDTO = accessControl.getUserFromSecurityContext()
+										.orElseThrow(() -> UserServicesException.Exceptions.USER_NOT_FOUND.getException());
 		
 		Date limit = DateUtils.addMinutes2FechaActual(-2);
 		
-		ApiTraRoute route = trackerMgr.getCurrentRoute(apiUser.getUserId(), limit);
-		
-		if (route == null) {
-			route = trackerMgr.createRoute(apiUser.getUserId());
-		}
-		
-		if (route == null) {
-			throw new TrackerException(TrackerException.ERROR_TRACK_COULD_NOT_BE_CREATED, 
-										TrackerException.ERROR_TRACK_COULD_NOT_BE_CREATED_MSG, 
-										new Exception(TrackerException.ERROR_TRACK_COULD_NOT_BE_CREATED_MSG));
-		}
+		RouteDTO routeDTO = trackerMgr.getCurrentRoute(userDTO.getUserId(), limit)
+							.orElseGet((() -> trackerMgr.createRoute(userDTO.getUserId())));
 		
 		Double latitude = extractLatitude(ggaLatitude);
 		Double longitude = extractLongitude(ggaLongitude);
 		
-		ApiTraPoint lastPoint = trackerMgr.getLastPoint(route.getApiTraRouteId());
-		if (lastPoint != null) {
-			if (lastPoint.getLatitude() - latitude < MIN_DIFF &&
-					lastPoint.getLongitude() - longitude < MIN_DIFF) {
-				// It is not worth to create a new point, it is better to update the last one inserted
-				ApiTraPoint apiTraPoint = new ApiTraPoint();
-				apiTraPoint.setAccuracy(accuracy);
-				apiTraPoint.setAltitude(altitude);
-				apiTraPoint.setLatitude(latitude);
-				apiTraPoint.setLongitude(longitude);
-				apiTraPoint.setWhen(new Date());
-				return trackerMgr.updatePoint(lastPoint.getApiTraPointId(), apiTraPoint);
-			}
-		}
-		
-		return trackerMgr.addPointToRoute(route, latitude, longitude, accuracy, altitude);
+		Optional<PointDTO> lastPoint = trackerMgr.getLastPoint(routeDTO.getRouteId());
+		Optional<PointDTO> updatedPoint = lastPoint.filter(t -> t.getLatitude() - latitude < MIN_DIFF)
+				.filter(t -> t.getLongitude() - longitude < MIN_DIFF)
+				.map(t -> {
+					PointDTO pointDTO = PointDTO.builder()
+							.accuracy(accuracy)
+							.altitude(altitude)
+							.latitude(latitude)
+							.longitude(longitude)
+							.when(new Date())
+							.build();
+					return trackerMgr.updatePoint(t.getPointId(), pointDTO);
+				});
+
+		return updatedPoint.orElseGet(() -> trackerMgr.addPointToRoute(routeDTO, latitude, longitude, accuracy, altitude));
 	}
 	
-	@RequestMapping(value = "", method = GET, produces = MediaType.APPLICATION_JSON_VALUE, headers="Accept=*/*")
+	@RequestMapping(value = "", method = GET, produces = APPLICATION_JSON_VALUE, headers="Accept=*/*")
     @ResponseBody
-    public List<ApiTraRoute> getListOfRoutesV1(
+    public List<RouteDTO> getListOfRoutesV1(
     											@RequestParam(value="startDateFrom")  @DateTimeFormat(pattern = "yyyyMMddHHmmss") Date startDateFrom,
     											@RequestParam(value="startDateTo")  @DateTimeFormat(pattern = "yyyyMMddHHmmss") Date startDateTo,
     											@RequestParam(value="orderAscDesc") String orderAscDesc,
@@ -106,12 +92,10 @@ public class TrackV1Ctrl {
     											@RequestParam(value="numRegistersPerPage") Integer numRegistersPerPage
     					) throws FelineApiException {
 		
-		ApiUser apiUser = accessControl.getUserFromSecurityContext();
+		Optional<UserDTO> userDTO = accessControl.getUserFromSecurityContext();
 
-		if (apiUser == null) {
-			throw new UserServicesException(UserServicesException.ERROR_USER_NOT_FOUND, 
-											UserServicesException.ERROR_USER_NOT_FOUND_MSG, 
-											new Exception(UserServicesException.ERROR_USER_NOT_FOUND_MSG));
+		if (!userDTO.isPresent()) {
+			throw UserServicesException.Exceptions.USER_NOT_FOUND.getException();
 		}
 		
 		validateGetTracks(startDateFrom, startDateTo,
@@ -119,44 +103,40 @@ public class TrackV1Ctrl {
 								page, numRegistersPerPage);
 		
 		
-		return trackerMgr.getRouteByApiTraUserAndFromStarDate(apiUser.getUserId(), 
+		return trackerMgr.getRouteByApiTraUserAndFromStarDate(userDTO.get().getUserId(), 
 																startDateFrom, startDateTo,
 																orderAscDesc,
 																page, numRegistersPerPage);
 	}
 	
-	@RequestMapping(value = "/{trackId}/points", method = GET, produces = MediaType.APPLICATION_JSON_VALUE, headers="Accept=*/*")
+	@RequestMapping(value = "/{trackId}/points", method = GET, produces = APPLICATION_JSON_VALUE, headers="Accept=*/*")
     @ResponseBody
-    public List<ApiTraPoint> getListOfPointsByRouteV1(
+    public List<PointDTO> getListOfPointsByRouteV1(
     													@PathVariable(value="trackId") Integer trackId
     												) throws FelineApiException {
 		
-		ApiUser apiUser = accessControl.getUserFromSecurityContext();
+		Optional<UserDTO> userDTO = accessControl.getUserFromSecurityContext();
 
-		if (apiUser == null) {
-			throw new UserServicesException(UserServicesException.ERROR_USER_NOT_FOUND, 
-											UserServicesException.ERROR_USER_NOT_FOUND_MSG, 
-											new Exception(UserServicesException.ERROR_USER_NOT_FOUND_MSG));
+		if (!userDTO.isPresent()) {
+			throw UserServicesException.Exceptions.USER_NOT_FOUND.getException();
 		}
 
-		return trackerMgr.getPointsByApiTraRouteIdAndUserId(trackId, apiUser.getUserId());
+		return trackerMgr.getPointsByApiTraRouteIdAndUserId(trackId, userDTO.get().getUserId());
 	}	
 	
-	@RequestMapping(value = "/{trackId}/center", method = GET, produces = MediaType.APPLICATION_JSON_VALUE, headers="Accept=*/*")
+	@RequestMapping(value = "/{trackId}/center", method = GET, produces = APPLICATION_JSON_VALUE, headers="Accept=*/*")
     @ResponseBody
-    public ApiTraPoint getRouteV1(
+    public PointDTO getRouteV1(
     										@PathVariable(value="trackId") Integer trackId
     								) throws FelineApiException {
 		
-		ApiUser apiUser = accessControl.getUserFromSecurityContext();
+		Optional<UserDTO> userDTO = accessControl.getUserFromSecurityContext();
 
-		if (apiUser == null) {
-			throw new UserServicesException(UserServicesException.ERROR_USER_NOT_FOUND, 
-											UserServicesException.ERROR_USER_NOT_FOUND_MSG, 
-											new Exception(UserServicesException.ERROR_USER_NOT_FOUND_MSG));
+		if (!userDTO.isPresent()) {
+			throw UserServicesException.Exceptions.USER_NOT_FOUND.getException();
 		}
 		
-		List<ApiTraPoint> list = trackerMgr.getPointsByApiTraRouteIdAndUserId(trackId, apiUser.getUserId());
+		List<PointDTO> list = trackerMgr.getPointsByApiTraRouteIdAndUserId(trackId, userDTO.get().getUserId());
 		return getCentralApiTraPoint(list);
 	}
 	
@@ -164,7 +144,7 @@ public class TrackV1Ctrl {
 		__     __    _ _     _       _   _                 
 		\ \   / /_ _| (_) __| | __ _| |_(_) ___  _ __  ___ 
 		 \ \ / / _` | | |/ _` |/ _` | __| |/ _ \| '_ \/ __|
-		  \ V / (_| | | | (_| | (_| | |_| | (_) | | | \__ \
+		  \ V / (_| | | | (_| | (_| | |_| | (_) | | | \__\
 		   \_/ \__,_|_|_|\__,_|\__,_|\__|_|\___/|_| |_|___/
 		                                                   
 	 */
@@ -262,7 +242,7 @@ public class TrackV1Ctrl {
 	}	
 	
 
-	private static ApiTraPoint getCentralApiTraPoint(List<ApiTraPoint> geoCoordinates) {
+	private static PointDTO getCentralApiTraPoint(List<PointDTO> geoCoordinates) {
 		
 		if (geoCoordinates == null || geoCoordinates.size() == 0) {
             return null;
@@ -276,7 +256,7 @@ public class TrackV1Ctrl {
         double y = 0;
         double z = 0;
 
-        for (ApiTraPoint apiTraPoint : geoCoordinates) {
+        for (PointDTO apiTraPoint : geoCoordinates) {
             double latitude = apiTraPoint.getLatitude() * Math.PI / 180;
             double longitude = apiTraPoint.getLongitude() * Math.PI / 180;
 
@@ -295,7 +275,7 @@ public class TrackV1Ctrl {
         double centralSquareRoot = Math.sqrt(x * x + y * y);
         double centralLatitude = Math.atan2(z, centralSquareRoot);
         
-        ApiTraPoint result = new ApiTraPoint();
+        PointDTO result = new PointDTO();
         result.setLatitude(centralLatitude * 180 / Math.PI);
         result.setLongitude(centralLongitude * 180 / Math.PI);
 
