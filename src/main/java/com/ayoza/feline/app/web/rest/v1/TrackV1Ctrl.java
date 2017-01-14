@@ -109,12 +109,11 @@ public class TrackV1Ctrl {
 																page, numRegistersPerPage);
 	}
 	
-	@RequestMapping(value = "/{trackId}/points", method = GET, produces = APPLICATION_JSON_VALUE, headers="Accept=*/*")
-    @ResponseBody
-    public List<PointDTO> getListOfPointsByRouteV1(
-    													@PathVariable(value="trackId") Integer trackId
-    												) throws FelineApiException {
-		
+	@RequestMapping(value = "/{trackId}/points", method = GET, produces = APPLICATION_JSON_VALUE, headers = "Accept=*/*")
+	@ResponseBody
+	public List<PointDTO> getListOfPointsByRouteV1(@PathVariable(value = "trackId") Integer trackId)
+			throws FelineApiException {
+
 		Optional<UserDTO> userDTO = accessControl.getUserFromSecurityContext();
 
 		if (!userDTO.isPresent()) {
@@ -122,7 +121,7 @@ public class TrackV1Ctrl {
 		}
 
 		return trackerMgr.getPointsByApiTraRouteIdAndUserId(trackId, userDTO.get().getUserId());
-	}	
+	}
 	
 	@RequestMapping(value = "/{trackId}/center", method = GET, produces = APPLICATION_JSON_VALUE, headers="Accept=*/*")
     @ResponseBody
