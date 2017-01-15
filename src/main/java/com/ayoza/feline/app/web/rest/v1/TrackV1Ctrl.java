@@ -5,6 +5,8 @@ import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 import static org.springframework.web.bind.annotation.RequestMethod.GET;
 import static org.springframework.web.bind.annotation.RequestMethod.POST;
 
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
@@ -26,7 +28,6 @@ import ayoza.com.feline.api.entities.tracker.dto.RouteDTO;
 import ayoza.com.feline.api.exceptions.FelineApiException;
 import ayoza.com.feline.api.exceptions.UserServicesException;
 import ayoza.com.feline.api.managers.tracker.TrackerMgr;
-import ayoza.com.feline.api.utils.DateUtils;
 
 @RestController
 @RequestMapping(value = "/v1/tracks")
@@ -57,9 +58,10 @@ public class TrackV1Ctrl {
 		UserDTO userDTO = accessControl.getUserFromSecurityContext()
 										.orElseThrow(() -> UserServicesException.Exceptions.USER_NOT_FOUND.getException());
 		
-		Date limit = DateUtils.addMinutes2FechaActual(-2);
+		//Date limit = DateUtils.addMinutes2FechaActual(-2);
+		Instant from = Instant.now().minus(2, ChronoUnit.MINUTES);
 		
-		RouteDTO routeDTO = trackerMgr.getCurrentRoute(userDTO.getUserId(), limit)
+		RouteDTO routeDTO = trackerMgr.getCurrentRoute(userDTO.getUserId(), from)
 							.orElseGet((() -> trackerMgr.createRoute(userDTO.getUserId())));
 		
 		Double latitude = extractLatitude(ggaLatitude);
@@ -74,7 +76,7 @@ public class TrackV1Ctrl {
 							.altitude(altitude)
 							.latitude(latitude)
 							.longitude(longitude)
-							.when(new Date())
+							.when(Instant.now())
 							.build();
 					return trackerMgr.updatePoint(t.getPointId(), pointDTO);
 				});
