@@ -79,7 +79,13 @@ public class TrackV1Ctrl {
 					return trackerMgr.updatePoint(t.getPointId(), pointDTO);
 				});
 
-		return updatedPoint.orElseGet(() -> trackerMgr.addPointToRoute(routeDTO, latitude, longitude, accuracy, altitude));
+		PointDTO pointDTO = PointDTO.builder()
+				.latitude(latitude)
+				.longitude(longitude)
+				.accuracy(accuracy)
+				.altitude(altitude)
+				.build();
+		return updatedPoint.orElseGet(() -> trackerMgr.addPointToRoute(pointDTO, routeDTO));
 	}
 	
 	@RequestMapping(value = "", method = GET, produces = APPLICATION_JSON_VALUE, headers="Accept=*/*")

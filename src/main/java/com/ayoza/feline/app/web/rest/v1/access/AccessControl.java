@@ -6,7 +6,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
 import ayoza.com.feline.api.entities.common.dto.UserDTO;
@@ -37,15 +36,8 @@ public class AccessControl {
     		final UserDetails userDetails = (UserDetails) authentication.getPrincipal();
     		username = userDetails.getUsername();
     	}
-        
-    	UserDTO userDTO;
-		try {
-			userDTO = userServicesMgr.getApiUserByUsername(username);
-		} catch (UsernameNotFoundException e) {
-			return Optional.empty();
-		}
 		
-        return Optional.of(userDTO);
+        return userServicesMgr.getApiUserByUsername(username);
     }
 	
 }

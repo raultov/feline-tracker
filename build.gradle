@@ -18,14 +18,14 @@ buildscript {
 apply plugin: 'java'
 apply plugin: 'eclipse-wtp'
 apply plugin: 'war'
-apply plugin: 'spring-boot'
+apply plugin: 'org.springframework.boot'
 
 ext {
     springSecurityVersion = '4.0.4.RELEASE'
     oauth2Version = '2.0.9.RELEASE'
     springTxVersion = '4.2.5.RELEASE'
     felineTrackerModelVersion = '1.0'
-    hibernateVersion = '5.1.0.Final'
+    hibernateVersion = '5.2.6.Final'
 }
 
 war {
@@ -62,7 +62,6 @@ dependencies {
     runtime "com.ayoza.feline-tracker-lib:feline-tracker-model:$felineTrackerModelVersion"
 	
 	compile "com.ayoza.feline-tracker-lib:feline-tracker-api:$felineTrackerModelVersion"
-	//runtime "com.ayoza.feline-tracker-lib:feline-tracker-core:$felineTrackerModelVersion"
 	
 	providedRuntime('org.springframework.boot:spring-boot-starter-tomcat')
 	testCompile('org.springframework.boot:spring-boot-starter-test') 
