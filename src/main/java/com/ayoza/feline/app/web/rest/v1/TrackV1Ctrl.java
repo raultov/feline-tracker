@@ -7,7 +7,7 @@ import static org.springframework.web.bind.annotation.RequestMethod.POST;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
-import java.util.Date;
+import java.util.Calendar;
 import java.util.List;
 import java.util.Optional;
 
@@ -93,8 +93,8 @@ public class TrackV1Ctrl {
 	@RequestMapping(value = "", method = GET, produces = APPLICATION_JSON_VALUE, headers="Accept=*/*")
     @ResponseBody
     public List<RouteDTO> getListOfRoutesV1(
-    											@RequestParam(value="startDateFrom")  @DateTimeFormat(pattern = "yyyyMMddHHmmss") Date startDateFrom,
-    											@RequestParam(value="startDateTo")  @DateTimeFormat(pattern = "yyyyMMddHHmmss") Date startDateTo,
+    											@RequestParam(value="startDateFrom") @DateTimeFormat(pattern = "yyyyMMddHHmmss") Calendar from,
+    											@RequestParam(value="startDateTo")  @DateTimeFormat(pattern = "yyyyMMddHHmmss") Calendar to,
     											@RequestParam(value="orderAscDesc") String orderAscDesc,
     											@RequestParam(value="page") Integer page,
     											@RequestParam(value="numRegistersPerPage") Integer numRegistersPerPage
@@ -105,6 +105,9 @@ public class TrackV1Ctrl {
 		if (!userDTO.isPresent()) {
 			throw UserServicesException.Exceptions.USER_NOT_FOUND.getException();
 		}
+		
+		Instant startDateFrom = from.toInstant();
+		Instant startDateTo = to.toInstant();
 		
 		validateGetTracks(startDateFrom, startDateTo,
 							orderAscDesc,
@@ -156,12 +159,12 @@ public class TrackV1Ctrl {
 		                                                   
 	 */
 	
-	private void validateGetTracks(Date startDateFrom, Date startDateTo,
+	private void validateGetTracks(Instant startDateFrom, Instant startDateTo,
 											String orderAscDesc,
 												Integer page, Integer numRegistersPerPage) throws FelineApiException {
 		
 		if (startDateFrom != null && startDateTo != null) {
-			if (startDateFrom.after(startDateTo)) {
+			if (startDateFrom.isAfter(startDateTo)) {
 				throw new ParserTrackerException(ParserTrackerException.WRONG_DATES_VALUES, 
 													ParserTrackerException.WRONG_DATES_VALUES_MSG, 
 													new Exception(ParserTrackerException.WRONG_DATES_VALUES_MSG));
