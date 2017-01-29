@@ -58,7 +58,6 @@ public class TrackV1Ctrl {
 		UserDTO userDTO = accessControl.getUserFromSecurityContext()
 										.orElseThrow(() -> UserServicesException.Exceptions.USER_NOT_FOUND.getException());
 		
-		//Date limit = DateUtils.addMinutes2FechaActual(-2);
 		Instant from = Instant.now().minus(2, ChronoUnit.MINUTES);
 		
 		RouteDTO routeDTO = trackerMgr.getCurrentRoute(userDTO.getUserId(), from)
@@ -68,6 +67,7 @@ public class TrackV1Ctrl {
 		Double longitude = extractLongitude(ggaLongitude);
 		
 		Optional<PointDTO> lastPoint = trackerMgr.getLastPoint(routeDTO.getRouteId());
+		
 		Optional<PointDTO> updatedPoint = lastPoint.filter(t -> t.getLatitude() - latitude < MIN_DIFF)
 				.filter(t -> t.getLongitude() - longitude < MIN_DIFF)
 				.map(t -> {
@@ -87,6 +87,7 @@ public class TrackV1Ctrl {
 				.accuracy(accuracy)
 				.altitude(altitude)
 				.build();
+
 		return updatedPoint.orElseGet(() -> trackerMgr.addPointToRoute(pointDTO, routeDTO));
 	}
 	
@@ -114,7 +115,7 @@ public class TrackV1Ctrl {
 								page, numRegistersPerPage);
 		
 		
-		return trackerMgr.getRouteByApiTraUserAndFromStarDate(userDTO.get().getUserId(), 
+		return trackerMgr.getRouteByTraUserAndFromStartDate(userDTO.get().getUserId(), 
 																startDateFrom, startDateTo,
 																orderAscDesc,
 																page, numRegistersPerPage);
@@ -131,7 +132,7 @@ public class TrackV1Ctrl {
 			throw UserServicesException.Exceptions.USER_NOT_FOUND.getException();
 		}
 
-		return trackerMgr.getPointsByApiTraRouteIdAndUserId(trackId, userDTO.get().getUserId());
+		return trackerMgr.getPointsByTraRouteIdAndAppUserId(trackId, userDTO.get().getUserId());
 	}
 	
 	@RequestMapping(value = "/{trackId}/center", method = GET, produces = APPLICATION_JSON_VALUE, headers="Accept=*/*")
@@ -146,7 +147,7 @@ public class TrackV1Ctrl {
 			throw UserServicesException.Exceptions.USER_NOT_FOUND.getException();
 		}
 		
-		List<PointDTO> list = trackerMgr.getPointsByApiTraRouteIdAndUserId(trackId, userDTO.get().getUserId());
+		List<PointDTO> list = trackerMgr.getPointsByTraRouteIdAndAppUserId(trackId, userDTO.get().getUserId());
 		return getCentralApiTraPoint(list);
 	}
 	
