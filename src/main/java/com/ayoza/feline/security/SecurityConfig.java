@@ -10,19 +10,19 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.authentication.encoding.Md5PasswordEncoder;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
+import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-import org.springframework.security.config.annotation.web.builders.WebSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.oauth2.provider.token.TokenStore;
 import org.springframework.security.oauth2.provider.token.store.JdbcTokenStore;
-import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 
 import ayoza.com.feline.api.managers.UserServicesMgr;
 
 @Configuration
-@EnableWebSecurity
+@EnableWebSecurity(debug = true)
+@EnableGlobalMethodSecurity(prePostEnabled = true)
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
 	
 	@Autowired
@@ -35,8 +35,8 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
      * Configures how users will be authenticated.
      */
     @Override
+    @Autowired
     protected void configure(AuthenticationManagerBuilder auth) throws Exception {
-    	
     	DaoAuthenticationProvider daoAuthenticationProvider = new DaoAuthenticationProvider();
     	
     	Md5PasswordEncoder passwordEncoder = new Md5PasswordEncoder();
@@ -44,29 +44,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     	
     	daoAuthenticationProvider.setUserDetailsService(userServicesMgr);
     	
-        // @formatter:off
     	auth.authenticationProvider(daoAuthenticationProvider);
-       /* auth
-            .inMemoryAuthentication()
-                .withUser("user1")
-                    .password("user1")
-                    .roles("USER")
-                    .and()
-                .withUser("user2")
-                    .password("user2")
-                    .roles("USER")
-        ;*/
-        // @formatter:on
-    }
-
-    /**
-     * Configures static resources that you don't want to be secured.
-     */
-    @Override
-    public void configure(WebSecurity web) throws Exception {
-        web.ignoring()
-        .antMatchers("/styles/**")
-        .antMatchers("/images/**");
     }
 
     /**
@@ -84,7 +62,6 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 		MyDefaultTokenServices defaultTokenServices = new MyDefaultTokenServices();
 		defaultTokenServices.setTokenStore(tokenStore());
 		defaultTokenServices.setSupportRefreshToken(true);
-		//defaultTokenServices.setTokenEnhancer(tokenEnhancer);
 	    return defaultTokenServices;
 	}
     
@@ -92,7 +69,6 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 	public TokenStore tokenStore() {
 		TokenStore tokenStore = new JdbcTokenStore(dataSource); 
 	    return tokenStore;
-		//return new InMemoryTokenStore();
 	}
 
     /**
@@ -100,48 +76,13 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
      */
     @Override
     protected void configure(HttpSecurity http) throws Exception {
-    	
-    	//CorsAwareAuthenticationFilter ca = new CorsAwareAuthenticationFilter(authenticationManagerBean());
-    	
         http
-    		//.addFilterBefore(ca,
-    		//		CorsAwareAuthenticationFilter.class)       
-        	.sessionManagement()
-    			.sessionCreationPolicy(SessionCreationPolicy.NEVER)
-    			.and()
-            .authorizeRequests()
-                .antMatchers("/").permitAll()
-                .and()
-//            .authorizeRequests()
-//                //.anyRequest().hasRole("USER")
-//                .anyRequest().hasRole("PPV_USER")
-//                .and()
-            //.authorizeRequests()
-
-            	// De momento comentamos esta línea que implicaría logarse al cliente
-            	//.anyRequest().hasRole("CLIENT")
-            	//.antMatchers("/v1/generics/**").permitAll()
-            	//.and()          	
-//            .authorizeRequests()
-//                .antMatchers(HttpMethod.POST, "/v1/users").permitAll()
-//            	.and()         		
-//            .authorizeRequests()
-//                .antMatchers(HttpMethod.PUT, "/v1/users/confirm").permitAll()
-//            	.and()            	
-            .exceptionHandling()
-                .accessDeniedPage("/login?error=authorization")
-                .and()
-            .csrf()
-                .requireCsrfProtectionMatcher(new AntPathRequestMatcher("/oauth/authorize")).disable()
-            .logout()
-                .logoutSuccessUrl("/")
-                .and()
-            .formLogin()
-                .failureUrl("/login?error=authentication")
-                .loginPage("/login") // If don't set, default page is generated and used.
-                .permitAll()
-            ;
+        	.sessionManagement().sessionCreationPolicy(SessionCreationPolicy.NEVER)
+        	.and()
+        	.httpBasic().disable()
+        	.anonymous().disable()     	
+        	.authorizeRequests().anyRequest().authenticated()
+        ;
     }
-    
     
 }

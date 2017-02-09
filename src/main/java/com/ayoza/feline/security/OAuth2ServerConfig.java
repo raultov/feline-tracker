@@ -31,7 +31,6 @@ public class OAuth2ServerConfig {
 
         @Override
         public void configure(HttpSecurity http) throws Exception {
-        	
             // @formatter:off
 			http
 				.requestMatchers().antMatchers(
@@ -47,7 +46,7 @@ public class OAuth2ServerConfig {
                 .antMatchers(HttpMethod.GET, "/v1/tracks").access("#oauth2.hasScope('general') and hasRole('ROLE_APP_USER')")
                 .antMatchers(HttpMethod.GET, "/v1/tracks/*/center").access("#oauth2.hasScope('general') and hasRole('ROLE_APP_USER')")
                 .antMatchers(HttpMethod.GET, "/v1/tracks/*/points").access("#oauth2.hasScope('general') and hasRole('ROLE_APP_USER')")
-                
+              
                 .antMatchers(HttpMethod.GET, "/v1/users").access("#oauth2.hasScope('general') and hasRole('ROLE_APP_USER')")
                 ;                
 
@@ -78,7 +77,7 @@ public class OAuth2ServerConfig {
 			 			.authorizedGrantTypes("password", "client_credentials", "refresh_token")
 			 			.authorities("ROLE_CLIENT")
 			 			.scopes("general")
-                        .secret("client-with-refresh-token-secret") // FIXME Change this password before going into production environment
+                        .secret("client-with-refresh-token-secret") // FIXME Change this password before going to production environment
                         .and()
             ;
         }
@@ -89,7 +88,7 @@ public class OAuth2ServerConfig {
                     // Set an AuthenticationManager to support password grant type!
                     .authenticationManager(authenticationManager)
 
-                    // For testing purpose we don't want store the approvals, so each time the approval will be checked.
+                    // For testing purpose we don't want to store the approvals, so each time the approval will be checked.
                     .userApprovalHandler(new DefaultUserApprovalHandler())
                     
                     .tokenStore(tokenStore)

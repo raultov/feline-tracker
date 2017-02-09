@@ -2,7 +2,7 @@
 
 buildscript {
 	ext {
-		springBootVersion = '1.4.3.RELEASE'
+		springBootVersion = '1.4.4.RELEASE'
 	}
 	
 	repositories {
@@ -21,8 +21,8 @@ apply plugin: 'war'
 apply plugin: 'org.springframework.boot'
 
 ext {
-    springSecurityVersion = '4.0.4.RELEASE'
-    oauth2Version = '2.0.9.RELEASE'
+    springSecurityVersion = '4.2.1.RELEASE'
+    oauth2Version = '2.0.12.RELEASE'
     springTxVersion = '4.2.5.RELEASE'
     felineTrackerModelVersion = '1.0'
     hibernateVersion = '5.2.6.Final'
@@ -30,7 +30,7 @@ ext {
 
 war {
 	baseName = 'feline-tracker'
-	version = '0.0.1-SNAPSHOT'
+	version = '0.0.2-SNAPSHOT'
 }
 sourceCompatibility = 1.8
 targetCompatibility = 1.8
@@ -48,12 +48,13 @@ configurations {
 dependencies {
 	compile('org.springframework.boot:spring-boot-starter-jersey')
 	compile('org.springframework.boot:spring-boot-starter-web')
+	compile('org.springframework.boot:spring-boot-starter-cache')
 	
 	compile "org.springframework.security:spring-security-core:$springSecurityVersion"
 	compile "org.springframework.security.oauth:spring-security-oauth2:$oauth2Version"
 	compile "org.springframework:spring-tx:$springTxVersion"
 	
-	compile "org.hibernate:hibernate-core:$hibernateVersion"
+	runtime "org.hibernate:hibernate-core:$hibernateVersion"
 	
     runtime ("com.ayoza.feline-tracker-lib:feline-tracker-core:$felineTrackerModelVersion") {
             exclude module: 'feline-tracker-model'
@@ -63,7 +64,7 @@ dependencies {
 	
 	compile "com.ayoza.feline-tracker-lib:feline-tracker-api:$felineTrackerModelVersion"
 	
-	providedRuntime('org.springframework.boot:spring-boot-starter-tomcat')
+	//providedRuntime('org.springframework.boot:spring-boot-starter-tomcat')
 	testCompile('org.springframework.boot:spring-boot-starter-test') 
 }
 

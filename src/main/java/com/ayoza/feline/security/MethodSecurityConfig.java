@@ -1,5 +1,6 @@
 package com.ayoza.feline.security;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.access.expression.method.MethodSecurityExpressionHandler;
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
@@ -13,6 +14,10 @@ import org.springframework.security.oauth2.provider.expression.OAuth2MethodSecur
 @Configuration
 @EnableGlobalMethodSecurity(prePostEnabled = true, proxyTargetClass = true)
 public class MethodSecurityConfig extends GlobalMethodSecurityConfiguration {
+	
+    @SuppressWarnings("unused")
+	@Autowired
+    private SecurityConfig securityConfig;
 
     @Override
     protected MethodSecurityExpressionHandler createExpressionHandler() {
