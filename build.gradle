@@ -47,8 +47,14 @@ configurations {
 
 dependencies {
 	compile('org.springframework.boot:spring-boot-starter-jersey')
-	compile('org.springframework.boot:spring-boot-starter-web')
-	compile('org.springframework.boot:spring-boot-starter-cache')
+	compile('org.springframework.boot:spring-boot-starter-cache')	
+	//compile('org.springframework.boot:spring-boot-starter-jetty')
+	compile('org.springframework.boot:spring-boot-starter-tomcat')
+	compile('org.springframework.boot:spring-boot-starter-web')// {
+		//exclude module: 'spring-boot-starter-tomcat'
+	//}
+	
+	//providedRuntime 'org.springframework.boot:spring-boot-starter-tomcat'
 	
 	compile "org.springframework.security:spring-security-core:$springSecurityVersion"
 	compile "org.springframework.security.oauth:spring-security-oauth2:$oauth2Version"
@@ -64,7 +70,6 @@ dependencies {
 	
 	compile "com.ayoza.feline-tracker-lib:feline-tracker-api:$felineTrackerModelVersion"
 	
-	//providedRuntime('org.springframework.boot:spring-boot-starter-tomcat')
 	testCompile('org.springframework.boot:spring-boot-starter-test') 
 }
 

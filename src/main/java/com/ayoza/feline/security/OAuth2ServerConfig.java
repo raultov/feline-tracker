@@ -13,6 +13,7 @@ import org.springframework.security.oauth2.config.annotation.web.configuration.R
 import org.springframework.security.oauth2.config.annotation.web.configurers.AuthorizationServerEndpointsConfigurer;
 import org.springframework.security.oauth2.config.annotation.web.configurers.ResourceServerSecurityConfigurer;
 import org.springframework.security.oauth2.provider.approval.DefaultUserApprovalHandler;
+import org.springframework.security.oauth2.provider.token.AuthorizationServerTokenServices;
 import org.springframework.security.oauth2.provider.token.TokenStore;
 
 @Configuration
@@ -65,7 +66,7 @@ public class OAuth2ServerConfig {
         private TokenStore tokenStore;
         
         @Autowired
-        private MyDefaultTokenServices defaultTokenServices;
+        private AuthorizationServerTokenServices defaultTokenServices;
 
         @Override
         public void configure(ClientDetailsServiceConfigurer clients) throws Exception {
