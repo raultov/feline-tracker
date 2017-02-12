@@ -16,6 +16,10 @@ import org.springframework.security.oauth2.provider.approval.DefaultUserApproval
 import org.springframework.security.oauth2.provider.token.AuthorizationServerTokenServices;
 import org.springframework.security.oauth2.provider.token.TokenStore;
 
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
+import lombok.experimental.FieldDefaults;
+
 @Configuration
 public class OAuth2ServerConfig {
 
@@ -57,16 +61,15 @@ public class OAuth2ServerConfig {
 
     @Configuration
     @EnableAuthorizationServer
+    @AllArgsConstructor(onConstructor=@__({@Autowired}))
+    @FieldDefaults(level=AccessLevel.PRIVATE)
     protected static class AuthorizationServerConfiguration extends AuthorizationServerConfigurerAdapter {
 
-        @Autowired
-        private AuthenticationManager authenticationManager;
+        AuthenticationManager authenticationManager;
         
-        @Autowired
-        private TokenStore tokenStore;
+        TokenStore tokenStore;
         
-        @Autowired
-        private AuthorizationServerTokenServices defaultTokenServices;
+        AuthorizationServerTokenServices defaultTokenServices;
 
         @Override
         public void configure(ClientDetailsServiceConfigurer clients) throws Exception {

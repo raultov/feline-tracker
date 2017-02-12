@@ -21,14 +21,14 @@ public class ParserTrackerException extends FelineApiException {
 	public static final int WRONG_PAGE_NEGATIVE_VALUE = 5;
 	public static final String WRONG_PAGE_NEGATIVE_VALUE_MSG = "Page field cannot be negative";
 	
-	public static final int ERROR_PAGE_CANNOT_BE_EMPTY = 6;
-	public static final String ERROR_PAGE_CANNOT_BE_EMPTY_MSG = "Page field cannot be empty";
+	public static final int ERROR_PAGE_CANNOT_BE_NULL = 6;
+	public static final String ERROR_PAGE_CANNOT_BE_NULL_MSG = "Page field cannot be null";
 	
 	public static final int WRONG_REGISTERS_PER_PAGE_NEGATIVE_VALUE = 7;
 	public static final String WRONG_REGISTERS_PER_PAGE_NEGATIVE_VALUE_MSG = "The number of registers per page cannot be negative";
 	
-	public static final int ERROR_REGISTERS_PER_PAGE_CANNOT_BE_EMPTY = 8;
-	public static final String ERROR_REGISTERS_PER_PAGE_CANNOT_BE_EMPTY_MSG = "The number of registers per page cannot be empty";
+	public static final int ERROR_REGISTERS_PER_PAGE_CANNOT_BE_NULL = 8;
+	public static final String ERROR_REGISTERS_PER_PAGE_CANNOT_BE_NULL_MSG = "The number of registers per page cannot be null";
 
 	public ParserTrackerException(int error, String message, Throwable e) {
 		super(error, message, e);

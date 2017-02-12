@@ -1,4 +1,4 @@
-package com.ayoza.feline.app.web.rest.v1;
+package com.ayoza.feline.app.web.rest.v1.user;
 
 import static org.springframework.web.bind.annotation.RequestMethod.GET;
 
@@ -17,20 +17,18 @@ import ayoza.com.feline.api.entities.common.dto.UserDTO;
 import ayoza.com.feline.api.exceptions.FelineApiException;
 import ayoza.com.feline.api.exceptions.UserServicesException;
 import ayoza.com.feline.api.managers.UserServicesMgr;
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
+import lombok.experimental.FieldDefaults;
 
 @RestController
 @RequestMapping(value = "/v1/users")
+@AllArgsConstructor(onConstructor=@__({@Autowired}))
+@FieldDefaults(level=AccessLevel.PRIVATE)
 public class UserV1Ctrl {
 	
 	private UserServicesMgr userServicesMgr;
 	private AccessControl accessControl;
-
-	@Autowired
-	public UserV1Ctrl(UserServicesMgr userServicesMgr,
-						AccessControl accessControl) {
-		this.userServicesMgr = userServicesMgr;
-		this.accessControl = accessControl;
-	}
 	
 	@RequestMapping(value = "", method = GET, produces = MediaType.APPLICATION_JSON_VALUE, headers="Accept=*/*")
     @ResponseBody

@@ -19,16 +19,19 @@ import org.springframework.security.oauth2.provider.token.TokenStore;
 import org.springframework.security.oauth2.provider.token.store.JdbcTokenStore;
 
 import ayoza.com.feline.api.managers.UserServicesMgr;
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
+import lombok.experimental.FieldDefaults;
 
 @Configuration
 @EnableWebSecurity
+@AllArgsConstructor(onConstructor=@__({@Autowired}))
+@FieldDefaults(level=AccessLevel.PRIVATE)
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
 	
-	@Autowired
-	private UserServicesMgr userServicesMgr;
+	UserServicesMgr userServicesMgr;
 	
-	@Autowired
-	private DataSource dataSource;
+	DataSource dataSource;
 
     /**
      * Configures how users will be authenticated.

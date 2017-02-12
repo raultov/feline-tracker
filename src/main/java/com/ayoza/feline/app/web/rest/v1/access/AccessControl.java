@@ -10,16 +10,16 @@ import org.springframework.stereotype.Service;
 
 import ayoza.com.feline.api.entities.common.dto.UserDTO;
 import ayoza.com.feline.api.managers.UserServicesMgr;
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
+import lombok.experimental.FieldDefaults;
 
 @Service
+@AllArgsConstructor(onConstructor=@__({@Autowired}))
+@FieldDefaults(level=AccessLevel.PRIVATE)
 public class AccessControl {
 	
-	private UserServicesMgr userServicesMgr;
-	
-	@Autowired
-	public AccessControl(UserServicesMgr userServicesMgr) {
-		this.userServicesMgr = userServicesMgr;
-	}
+	UserServicesMgr userServicesMgr;
 
 	public Optional<UserDTO> getUserFromSecurityContext() {
         
