@@ -30,6 +30,7 @@ ext {
     felineTrackerModelVersion = '1.0'
     hibernateVersion = '5.2.6.Final'
     lombokVersion = '1.16.12'
+    jUnitsParamsversion = '0.3.6'
 }
 
 war {
@@ -78,6 +79,7 @@ dependencies {
     apt "org.projectlombok:lombok:$lombokVersion" 	
 	
 	testCompile('org.springframework.boot:spring-boot-starter-test') 
+	compile "pl.pragmatists:JUnitParams:$jUnitsParamsversion"
 }
 
 

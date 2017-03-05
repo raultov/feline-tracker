@@ -5,12 +5,12 @@ import java.time.temporal.ChronoUnit;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.InjectMocks;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import ayoza.com.feline.api.exceptions.FelineApiException;
+import junitparams.JUnitParamsRunner;
+import junitparams.Parameters;
 
-@RunWith(SpringJUnit4ClassRunner.class)
+@RunWith(JUnitParamsRunner.class)
 public class TrackValidatorTest {
 	
 	private static final Instant FROM_VALID = Instant.now();
@@ -29,14 +29,12 @@ public class TrackValidatorTest {
 	private static final Integer NUM_REGISTERS_NULL = null;
 	private static final Integer NEGATIVE_NUM_REGISTERS = -1;
 	
-
-	@InjectMocks
 	private TrackValidator trackValidator = new TrackValidator();
 
 	@Test
-	public void allParametesAreValid() throws FelineApiException {
-		trackValidator.validateGetTracks(FROM_VALID, TO_VALID, ASC_VALID, PAGE_VALID, NUM_REGISTERS_PER_PAGE_VALID);
-		trackValidator.validateGetTracks(FROM_VALID, TO_VALID, DESC_VALID, PAGE_VALID, NUM_REGISTERS_PER_PAGE_VALID);
+	@Parameters({ASC_VALID, DESC_VALID })
+	public void allParametesAreValid(String order) throws FelineApiException {
+		trackValidator.validateGetTracks(FROM_VALID, TO_VALID, order, PAGE_VALID, NUM_REGISTERS_PER_PAGE_VALID);
 	}
 	
 	@Test(expected = FelineApiException.class)

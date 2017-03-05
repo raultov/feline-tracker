@@ -3,6 +3,7 @@ package com.ayoza.feline.app.web.rest.v1.tracker;
 import static com.ayoza.feline.app.web.rest.v1.tracker.TrackerUtils.extractLatitude;
 import static com.ayoza.feline.app.web.rest.v1.tracker.TrackerUtils.extractLongitude;
 import static com.ayoza.feline.app.web.rest.v1.tracker.TrackerUtils.getCentralApiTraPoint;
+import static java.lang.Math.abs;
 import static org.springframework.http.MediaType.APPLICATION_FORM_URLENCODED_VALUE;
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 import static org.springframework.web.bind.annotation.RequestMethod.GET;
@@ -30,9 +31,9 @@ import ayoza.com.feline.api.entities.tracker.dto.RouteDTO;
 import ayoza.com.feline.api.exceptions.FelineApiException;
 import ayoza.com.feline.api.exceptions.UserServicesException;
 import ayoza.com.feline.api.managers.tracker.TrackerMgr;
+import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.experimental.FieldDefaults;
-import lombok.AccessLevel;
 
 @RestController
 @RequestMapping(value = "/v1/tracks")
@@ -51,11 +52,11 @@ public class TrackV1Ctrl {
 	@RequestMapping(value = "", method = POST, produces = APPLICATION_JSON_VALUE, consumes = APPLICATION_FORM_URLENCODED_VALUE, headers="Accept=*/*")
     @ResponseBody
     public PointDTO addPointV1(
-								@RequestParam(value="latitude", required=true)  String ggaLatitude, // 4025.7313,N
-								@RequestParam(value="longitude", required=true)  String ggaLongitude, // 00338.5613,W
+								@RequestParam(value="latitude", required=true)  String ggaLatitude, // 4025.7313N
+								@RequestParam(value="longitude", required=true)  String ggaLongitude, // 00338.5613W
 								@RequestParam(value="accuracy", required=false)  Double accuracy,
 								@RequestParam(value="altitude", required=false)  Double altitude
-    							) throws FelineApiException {
+							) throws FelineApiException {
 		
 		UserDTO userDTO = accessControl.getUserFromSecurityContext()
 										.orElseThrow(() -> UserServicesException.Exceptions.USER_NOT_FOUND.getException());
@@ -69,9 +70,10 @@ public class TrackV1Ctrl {
 		Double longitude = extractLongitude(ggaLongitude);
 		
 		Optional<PointDTO> lastPoint = trackerMgr.getLastPoint(routeDTO.getRouteId());
-		
-		Optional<PointDTO> updatedPoint = lastPoint.filter(t -> t.getLatitude() - latitude < MIN_DIFF)
-				.filter(t -> t.getLongitude() - longitude < MIN_DIFF)
+
+		Optional<PointDTO> updatedPoint = lastPoint
+				.filter(t -> abs(t.getLatitude() - latitude) < MIN_DIFF)
+				.filter(t -> abs(t.getLongitude() - longitude) < MIN_DIFF)
 				.map(t -> {
 					PointDTO pointDTO = PointDTO.builder()
 							.accuracy(accuracy)
@@ -83,14 +85,16 @@ public class TrackV1Ctrl {
 					return trackerMgr.updatePoint(t.getPointId(), pointDTO);
 				});
 
-		PointDTO pointDTO = PointDTO.builder()
-				.latitude(latitude)
-				.longitude(longitude)
-				.accuracy(accuracy)
-				.altitude(altitude)
-				.build();
-
-		return updatedPoint.orElseGet(() -> trackerMgr.addPointToRoute(pointDTO, routeDTO));
+		return updatedPoint.orElseGet(() -> {
+					PointDTO pointDTO = PointDTO.builder()
+							.latitude(latitude)
+							.longitude(longitude)
+							.accuracy(accuracy)
+							.altitude(altitude)
+							.build();
+			
+					return trackerMgr.addPointToRoute(pointDTO, routeDTO);
+				});
 	}
 	
 	@RequestMapping(value = "", method = GET, produces = APPLICATION_JSON_VALUE, headers="Accept=*/*")
@@ -104,10 +108,6 @@ public class TrackV1Ctrl {
     					) throws FelineApiException {
 		
 		Optional<UserDTO> userDTO = accessControl.getUserFromSecurityContext();
-
-		if (!userDTO.isPresent()) {
-			throw UserServicesException.Exceptions.USER_NOT_FOUND.getException();
-		}
 		
 		Instant startDateFrom = from.toInstant();
 		Instant startDateTo = to.toInstant();
