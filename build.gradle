@@ -31,6 +31,7 @@ ext {
     hibernateVersion = '5.2.6.Final'
     lombokVersion = '1.16.12'
     jUnitsParamsversion = '0.3.6'
+    assertCoreVersion = '3.6.2'
 }
 
 war {
@@ -80,6 +81,7 @@ dependencies {
 	
 	testCompile('org.springframework.boot:spring-boot-starter-test') 
 	compile "pl.pragmatists:JUnitParams:$jUnitsParamsversion"
+	compile "org.assertj:assertj-core:$assertCoreVersion"
 }
 
 

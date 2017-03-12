@@ -1,58 +1,67 @@
 package com.ayoza.feline.app.web.rest.v1.tracker;
 
+import static com.ayoza.feline.web.rest.v1.exceptions.ParserTrackerException.WRONG_GPGGA_FORMAT;
+import static com.ayoza.feline.web.rest.v1.exceptions.ParserTrackerException.WRONG_GPGGA_FORMAT_MSG;
+
 import java.util.List;
 
 import com.ayoza.feline.web.rest.v1.exceptions.ParserTrackerException;
 
 import ayoza.com.feline.api.entities.tracker.dto.PointDTO;
 
-final class TrackerUtils {
+class TrackerUtils {
+	
+	private static final double MINUTES = 60.0;
+	private static final double SIGN_N_E = 1.0;
+	private static final double SIGN_S_W = -1.0;
+	private static final int PLACES_N_S = 2;
+	private static final int PLACES_E_W = 3;
 
 	private TrackerUtils() {
 	}
-	
-	public static Double extractLatitude(String ggaLatitude) throws ParserTrackerException {
-		
-		Double degrees = 0.0, minutes = 0.0;
+
+	public static Double convertToDecimalDegrees(String gga) throws ParserTrackerException {
+		Double degrees, minutes, sign;
+		char cardinalPoint;
+		int places;
 		
 		try {
-			degrees = new Double(ggaLatitude.substring(0, 2));
-			minutes = new Double(ggaLatitude.substring(2, ggaLatitude.length()-1));
-		} catch(NumberFormatException nfe) {
-			throw new ParserTrackerException(ParserTrackerException.WRONG_GPGGA_FORMAT,
-												ParserTrackerException.WRONG_GPGGA_FORMAT_MSG,
-												nfe);
+			cardinalPoint = gga.charAt(gga.length()-1);		
+			switch (cardinalPoint) {
+				case 'N':
+					sign = SIGN_N_E;
+					places = PLACES_N_S;
+					break;
+				case 'E':
+					sign = SIGN_N_E;
+					places = PLACES_E_W;
+					break;
+					
+				case 'S':
+					sign = SIGN_S_W;
+					places = PLACES_N_S;
+					break;
+				case 'W':
+					sign = SIGN_S_W;
+					places = PLACES_E_W;
+					break;
+					
+				default:
+					throw new ParserTrackerException(WRONG_GPGGA_FORMAT, WRONG_GPGGA_FORMAT_MSG, new Exception(WRONG_GPGGA_FORMAT_MSG));
+			}
+			
+			degrees = new Double(gga.substring(0, places));
+			minutes = new Double(gga.substring(places, gga.length()-1));
+			minutes /= MINUTES;
+		} catch(NumberFormatException | IndexOutOfBoundsException | NullPointerException nfe) {
+			throw new ParserTrackerException(WRONG_GPGGA_FORMAT, WRONG_GPGGA_FORMAT_MSG, nfe);
 		}
-		
-		double sign = ggaLatitude.charAt(ggaLatitude.length()-1) == 'N' ? 1.0 : -1.0;
-		
-		minutes = minutes / 60.0;
 		
 		return (degrees + minutes) * sign;
 	}
 	
-	public static Double extractLongitude(String ggaLongitude) throws ParserTrackerException {
-		
-		Double degrees = 0.0, minutes = 0.0;
-		
-		try {
-			degrees = new Double(ggaLongitude.substring(0, 3));
-			minutes = new Double(ggaLongitude.substring(3, ggaLongitude.length()-1));
-		} catch(NumberFormatException | IndexOutOfBoundsException nfe) {
-			throw new ParserTrackerException(ParserTrackerException.WRONG_GPGGA_FORMAT,
-												ParserTrackerException.WRONG_GPGGA_FORMAT_MSG,
-												nfe);
-		}
-		
-		double sign = ggaLongitude.charAt(ggaLongitude.length()-1) == 'E' ? 1.0 : -1.0;
-		
-		minutes = minutes / 60.0;
-		
-		return (degrees + minutes) * sign;
-	}	
-	
 
-	public static PointDTO getCentralApiTraPoint(List<PointDTO> geoCoordinates) {
+	static PointDTO getCentralApiTraPoint(List<PointDTO> geoCoordinates) {
 		
 		if (geoCoordinates == null || geoCoordinates.size() == 0) {
             return null;

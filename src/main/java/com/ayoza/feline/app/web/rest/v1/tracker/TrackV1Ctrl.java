@@ -1,7 +1,6 @@
 package com.ayoza.feline.app.web.rest.v1.tracker;
 
-import static com.ayoza.feline.app.web.rest.v1.tracker.TrackerUtils.extractLatitude;
-import static com.ayoza.feline.app.web.rest.v1.tracker.TrackerUtils.extractLongitude;
+import static com.ayoza.feline.app.web.rest.v1.tracker.TrackerUtils.convertToDecimalDegrees;
 import static com.ayoza.feline.app.web.rest.v1.tracker.TrackerUtils.getCentralApiTraPoint;
 import static java.lang.Math.abs;
 import static org.springframework.http.MediaType.APPLICATION_FORM_URLENCODED_VALUE;
@@ -29,6 +28,7 @@ import ayoza.com.feline.api.entities.common.dto.UserDTO;
 import ayoza.com.feline.api.entities.tracker.dto.PointDTO;
 import ayoza.com.feline.api.entities.tracker.dto.RouteDTO;
 import ayoza.com.feline.api.exceptions.FelineApiException;
+import ayoza.com.feline.api.exceptions.TrackerException;
 import ayoza.com.feline.api.exceptions.UserServicesException;
 import ayoza.com.feline.api.managers.tracker.TrackerMgr;
 import lombok.AccessLevel;
@@ -66,8 +66,8 @@ public class TrackV1Ctrl {
 		RouteDTO routeDTO = trackerMgr.getCurrentRoute(userDTO.getUserId(), from)
 							.orElseGet((() -> trackerMgr.createRoute(userDTO.getUserId())));
 		
-		Double latitude = extractLatitude(ggaLatitude);
-		Double longitude = extractLongitude(ggaLongitude);
+		Double latitude = convertToDecimalDegrees(ggaLatitude);
+		Double longitude = convertToDecimalDegrees(ggaLongitude);
 		
 		Optional<PointDTO> lastPoint = trackerMgr.getLastPoint(routeDTO.getRouteId());
 
@@ -82,7 +82,11 @@ public class TrackV1Ctrl {
 							.longitude(longitude)
 							.when(Instant.now())
 							.build();
-					return trackerMgr.updatePoint(t.getPointId(), pointDTO);
+					try {
+						return trackerMgr.updatePoint(t.getPointId(), pointDTO);
+					} catch (TrackerException e) {
+						throw new RuntimeException(e);
+					}
 				});
 
 		return updatedPoint.orElseGet(() -> {
@@ -107,7 +111,8 @@ public class TrackV1Ctrl {
     											@RequestParam(value="numRegistersPerPage") Integer numRegistersPerPage
     					) throws FelineApiException {
 		
-		Optional<UserDTO> userDTO = accessControl.getUserFromSecurityContext();
+		UserDTO userDTO = accessControl.getUserFromSecurityContext()
+				.orElseThrow(() -> UserServicesException.Exceptions.USER_NOT_FOUND.getException());
 		
 		Instant startDateFrom = from.toInstant();
 		Instant startDateTo = to.toInstant();
@@ -117,7 +122,7 @@ public class TrackV1Ctrl {
 												page, numRegistersPerPage);
 		
 		
-		return trackerMgr.getRouteByTraUserAndFromStartDate(userDTO.get().getUserId(), 
+		return trackerMgr.getRouteByTraUserAndFromStartDate(userDTO.getUserId(), 
 																startDateFrom, startDateTo,
 																orderAscDesc,
 																page, numRegistersPerPage);
@@ -128,28 +133,22 @@ public class TrackV1Ctrl {
 	public List<PointDTO> getListOfPointsByRouteV1(@PathVariable(value = "trackId") Integer trackId)
 			throws FelineApiException {
 
-		Optional<UserDTO> userDTO = accessControl.getUserFromSecurityContext();
+		UserDTO userDTO = accessControl.getUserFromSecurityContext()
+				.orElseThrow(() -> UserServicesException.Exceptions.USER_NOT_FOUND.getException());
 
-		if (!userDTO.isPresent()) {
-			throw UserServicesException.Exceptions.USER_NOT_FOUND.getException();
-		}
-
-		return trackerMgr.getPointsByTraRouteIdAndAppUserId(trackId, userDTO.get().getUserId());
+		return trackerMgr.getPointsByTraRouteIdAndAppUserId(trackId, userDTO.getUserId());
 	}
 	
 	@RequestMapping(value = "/{trackId}/center", method = GET, produces = APPLICATION_JSON_VALUE, headers="Accept=*/*")
     @ResponseBody
-    public PointDTO getRouteV1(
-    										@PathVariable(value="trackId") Integer trackId
+    public PointDTO getCentralPointV1(
+    										@PathVariable(value="trackId") Integer routeId
     								) throws FelineApiException {
 		
-		Optional<UserDTO> userDTO = accessControl.getUserFromSecurityContext();
+		UserDTO userDTO = accessControl.getUserFromSecurityContext()
+				.orElseThrow(() -> UserServicesException.Exceptions.USER_NOT_FOUND.getException());
 
-		if (!userDTO.isPresent()) {
-			throw UserServicesException.Exceptions.USER_NOT_FOUND.getException();
-		}
-		
-		List<PointDTO> list = trackerMgr.getPointsByTraRouteIdAndAppUserId(trackId, userDTO.get().getUserId());
+		List<PointDTO> list = trackerMgr.getPointsByTraRouteIdAndAppUserId(routeId, userDTO.getUserId());
 		return getCentralApiTraPoint(list);
 	}
 }
