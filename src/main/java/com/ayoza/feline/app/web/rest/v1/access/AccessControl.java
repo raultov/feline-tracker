@@ -32,9 +32,11 @@ public class AccessControl {
     	String username = null;
     	if (authentication.getPrincipal() instanceof String) {
     		username = (String) authentication.getPrincipal();
-    	} else {
+    	} else if (authentication.getPrincipal() instanceof UserDetails) {
     		final UserDetails userDetails = (UserDetails) authentication.getPrincipal();
     		username = userDetails.getUsername();
+    	} else {
+    		throw new SecurityException("Unexpected Principal Object");
     	}
 		
         return userServicesMgr.getApiUserByUsername(username);

@@ -33,8 +33,9 @@ public class UserV1Ctrl {
 	@RequestMapping(value = "", method = GET, produces = MediaType.APPLICATION_JSON_VALUE, headers="Accept=*/*")
     @ResponseBody
     public AppUserDTO getAppUserV1() throws FelineApiException {
-		Optional<UserDTO> userDTO = accessControl.getUserFromSecurityContext();		
-		Optional<AppUserDTO> appUserDTO = userServicesMgr.getApiUserByUserId(userDTO.get().getUserId());
+		UserDTO userDTO = accessControl.getUserFromSecurityContext()
+				.orElseThrow(() -> UserServicesException.Exceptions.USER_NOT_FOUND.getException());
+		Optional<AppUserDTO> appUserDTO = userServicesMgr.getApiUserByUserId(userDTO.getUserId());
 		return appUserDTO.orElseThrow(() -> UserServicesException.Exceptions.USER_NOT_FOUND.getException());
 	}
 }
