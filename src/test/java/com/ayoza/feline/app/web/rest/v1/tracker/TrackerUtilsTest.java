@@ -36,34 +36,34 @@ public class TrackerUtilsTest {
 	@Test
 	@Parameters({ VALID_GGA_LATITUDE_1 + "," + GGA_LATITUDE_DOUBLE_1, 
 				  VALID_GGA_LATITUDE_2 + "," + GGA_LATITUDE_DOUBLE_2 })
-	public void validGGALatitude(String gga, double expected) throws ParserTrackerException {
+	public void validGGALatitude(String gga, double expected) {
 		assertThat(TrackerUtils.convertToDecimalDegrees(gga)).isEqualTo(expected);
 	}
 	
 	@Test(expected = ParserTrackerException.class)
 	@Parameters({ INVALID_GGA_LATITUDE_1, 
 				  INVALID_GGA_LATITUDE_2 })
-	public void invalidGGALatitude(String invalidGGA) throws ParserTrackerException {
+	public void invalidGGALatitude(String invalidGGA) {
 		TrackerUtils.convertToDecimalDegrees(invalidGGA);
 	}
 	
 	@Test
 	@Parameters({ VALID_GGA_LONGITUDE_1 + "," + VALID_LONGITUDE_DOUBLE_1, 
 				  VALID_GGA_LONGITUDE_2 + "," + VALID_LONGITUDE_DOUBLE_2 })
-	public void validGGALongitude(String gga, double expected) throws ParserTrackerException {
+	public void validGGALongitude(String gga, double expected) {
 		assertThat(TrackerUtils.convertToDecimalDegrees(gga)).isEqualTo(expected);
 	}
 	
 	@Test(expected = ParserTrackerException.class)
 	@Parameters({ INVALID_GGA_LONGITUDE_1, 
 				  INVALID_GGA_LONGITUDE_2 })
-	public void invalidGGALongitude(String invalidGGA) throws ParserTrackerException {
+	public void invalidGGALongitude(String invalidGGA) {
 		TrackerUtils.convertToDecimalDegrees(invalidGGA);
 	}
 	
 	@Test(expected = ParserTrackerException.class)
 	@Parameters({ INVALID_GGA_1, INVALID_GGA_2, INVALID_GGA_3 })
-	public void invalidGGA(String invalidGGA) throws ParserTrackerException {
+	public void invalidGGA(String invalidGGA) {
 		TrackerUtils.convertToDecimalDegrees(invalidGGA);
 	}
 }

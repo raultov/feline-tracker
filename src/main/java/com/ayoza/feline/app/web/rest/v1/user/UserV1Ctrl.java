@@ -14,7 +14,6 @@ import com.ayoza.feline.app.web.rest.v1.access.AccessControl;
 
 import ayoza.com.feline.api.app.dto.AppUserDTO;
 import ayoza.com.feline.api.entities.common.dto.UserDTO;
-import ayoza.com.feline.api.exceptions.FelineApiException;
 import ayoza.com.feline.api.exceptions.UserServicesException;
 import ayoza.com.feline.api.managers.UserServicesMgr;
 import lombok.AccessLevel;
@@ -32,7 +31,7 @@ public class UserV1Ctrl {
 	
 	@RequestMapping(value = "", method = GET, produces = MediaType.APPLICATION_JSON_VALUE, headers="Accept=*/*")
     @ResponseBody
-    public AppUserDTO getAppUserV1() throws FelineApiException {
+    public AppUserDTO getAppUserV1() {
 		UserDTO userDTO = accessControl.getUserFromSecurityContext()
 				.orElseThrow(() -> UserServicesException.Exceptions.USER_NOT_FOUND.getException());
 		Optional<AppUserDTO> appUserDTO = userServicesMgr.getApiUserByUserId(userDTO.getUserId());

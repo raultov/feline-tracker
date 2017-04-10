@@ -6,9 +6,10 @@ import java.time.temporal.ChronoUnit;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import ayoza.com.feline.api.exceptions.FelineApiException;
 import junitparams.JUnitParamsRunner;
 import junitparams.Parameters;
+
+import com.ayoza.feline.web.rest.v1.exceptions.ParserTrackerException;
 
 @RunWith(JUnitParamsRunner.class)
 public class TrackValidatorTest {
@@ -33,47 +34,47 @@ public class TrackValidatorTest {
 
 	@Test
 	@Parameters({ASC_VALID, DESC_VALID })
-	public void allParametesAreValid(String order) throws FelineApiException {
+	public void allParametesAreValid(String order) {
 		trackValidator.validateGetTracks(FROM_VALID, TO_VALID, order, PAGE_VALID, NUM_REGISTERS_PER_PAGE_VALID);
 	}
 	
-	@Test(expected = FelineApiException.class)
-	public void fromIsOlderThanTo() throws FelineApiException {
+	@Test(expected = ParserTrackerException.class)
+	public void fromIsOlderThanTo() {
 		trackValidator.validateGetTracks(FROM_AFTER_TO, TO_VALID, ASC_VALID, PAGE_VALID, NUM_REGISTERS_PER_PAGE_VALID);
 	}
 	
-	@Test(expected = FelineApiException.class)
-	public void orderIsEmpty() throws FelineApiException {
+	@Test(expected = ParserTrackerException.class)
+	public void orderIsEmpty() {
 		trackValidator.validateGetTracks(FROM_VALID, TO_VALID, EMPTY_ORDER, PAGE_VALID, NUM_REGISTERS_PER_PAGE_VALID);
 	}
 	
-	@Test(expected = FelineApiException.class)
-	public void orderIsNull() throws FelineApiException {
+	@Test(expected = ParserTrackerException.class)
+	public void orderIsNull() {
 		trackValidator.validateGetTracks(FROM_VALID, TO_VALID, ORDER_NULL, PAGE_VALID, NUM_REGISTERS_PER_PAGE_VALID);
 	}
 	
-	@Test(expected = FelineApiException.class)
-	public void orderIsWrong() throws FelineApiException {
+	@Test(expected = ParserTrackerException.class)
+	public void orderIsWrong() {
 		trackValidator.validateGetTracks(FROM_VALID, TO_VALID, WRONG_ORDER, PAGE_VALID, NUM_REGISTERS_PER_PAGE_VALID);
 	}
 	
-	@Test(expected = FelineApiException.class)
-	public void pageIsNull() throws FelineApiException {
+	@Test(expected = ParserTrackerException.class)
+	public void pageIsNull() {
 		trackValidator.validateGetTracks(FROM_VALID, TO_VALID, DESC_VALID, PAGE_NULL, NUM_REGISTERS_PER_PAGE_VALID);
 	}
 	
-	@Test(expected = FelineApiException.class)
-	public void pageIsNegative() throws FelineApiException {
+	@Test(expected = ParserTrackerException.class)
+	public void pageIsNegative() {
 		trackValidator.validateGetTracks(FROM_VALID, TO_VALID, DESC_VALID, NEGATIVE_PAGE, NUM_REGISTERS_PER_PAGE_VALID);
 	}
 	
-	@Test(expected = FelineApiException.class)
-	public void numRegistersIsNull() throws FelineApiException {
+	@Test(expected = ParserTrackerException.class)
+	public void numRegistersIsNull() {
 		trackValidator.validateGetTracks(FROM_VALID, TO_VALID, DESC_VALID, PAGE_VALID, NUM_REGISTERS_NULL);
 	}
 	
-	@Test(expected = FelineApiException.class)
-	public void numRegistersIsNegative() throws FelineApiException {
+	@Test(expected = ParserTrackerException.class)
+	public void numRegistersIsNegative() {
 		trackValidator.validateGetTracks(FROM_VALID, TO_VALID, DESC_VALID, PAGE_VALID, NEGATIVE_NUM_REGISTERS);
 	}
 }

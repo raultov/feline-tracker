@@ -4,6 +4,8 @@ import static java.util.Collections.singletonList;
 import static java.util.Optional.empty;
 import static java.util.Optional.of;
 import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyInt;
+import static org.mockito.Matchers.anyLong;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.never;
@@ -18,6 +20,8 @@ import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 
 import com.ayoza.feline.app.web.rest.v1.access.AccessControl;
 import com.ayoza.feline.web.rest.v1.exceptions.ParserTrackerException;
@@ -25,7 +29,6 @@ import com.ayoza.feline.web.rest.v1.exceptions.ParserTrackerException;
 import ayoza.com.feline.api.entities.common.dto.UserDTO;
 import ayoza.com.feline.api.entities.tracker.dto.PointDTO;
 import ayoza.com.feline.api.entities.tracker.dto.RouteDTO;
-import ayoza.com.feline.api.exceptions.FelineApiException;
 import ayoza.com.feline.api.exceptions.FelineNoContentException;
 import ayoza.com.feline.api.exceptions.UserServicesException;
 import ayoza.com.feline.api.managers.tracker.TrackerMgr;
@@ -94,7 +97,7 @@ public class TrackV1CtrlTest {
 	 */
 
 	@Test
-	public void existingLastPoint_ShouldNotCreateNewRoute_ShouldNotUpdateLastPoint_ShouldCreateNewPoint() throws FelineApiException {
+	public void existingLastPoint_ShouldNotCreateNewRoute_ShouldNotUpdateLastPoint_ShouldCreateNewPoint() {
 		when(accessControl.getUserFromSecurityContext()).thenReturn(of(userDTO));
 		when(trackerMgr.getCurrentRoute(eq(USER_ID), any())).thenReturn(of(routeDTO));
 		when(trackerMgr.getLastPoint(ROUTE_ID)).thenReturn(of(lastFarawayPointDTO));
@@ -102,28 +105,28 @@ public class TrackV1CtrlTest {
 		trackV1Ctrl.addPointV1(GGA_LATITUDE, GGA_LONGITUDE, ACCURACY, ALTITUDE);
 		
 		verify(accessControl).getUserFromSecurityContext();
-		verify(trackerMgr, never()).createRoute(any());
-		verify(trackerMgr, never()).updatePoint(any(), any());
+		verify(trackerMgr, never()).createRoute(anyInt());
+		verify(trackerMgr, never()).updatePoint(anyLong(), any());
 		verify(trackerMgr).addPointToRoute(any(), any());
 	}
 	
 	@Test
-	public void existingLastPoint_ShouldNotCreateNewRoute_ShouldUpdateLastPoint_ShouldNotCreateNewPoint() throws FelineApiException {
+	public void existingLastPoint_ShouldNotCreateNewRoute_ShouldUpdateLastPoint_ShouldNotCreateNewPoint() {
 		when(accessControl.getUserFromSecurityContext()).thenReturn(of(userDTO));
 		when(trackerMgr.getCurrentRoute(eq(USER_ID), any())).thenReturn(of(routeDTO));
 		when(trackerMgr.getLastPoint(ROUTE_ID)).thenReturn(of(lastClosePointDTO));
-		when(trackerMgr.updatePoint(any(), any())).thenReturn(lastClosePointDTO);
+		when(trackerMgr.updatePoint(anyLong(), any())).thenReturn(lastClosePointDTO);
 		
 		trackV1Ctrl.addPointV1(GGA_LATITUDE, GGA_LONGITUDE, ACCURACY, ALTITUDE);
 
 		verify(accessControl).getUserFromSecurityContext();
-		verify(trackerMgr, never()).createRoute(any());
-		verify(trackerMgr).updatePoint(any(), any());
+		verify(trackerMgr, never()).createRoute(anyInt());
+		verify(trackerMgr).updatePoint(anyLong(), any());
 		verify(trackerMgr, never()).addPointToRoute(any(), any());
 	}
 	
 	@Test
-	public void nonExistingLastPoint_ShouldNotCreateNewRoute_ShouldNotUpdateLastPoint_ShouldCreateNewPoint() throws FelineApiException {
+	public void nonExistingLastPoint_ShouldNotCreateNewRoute_ShouldNotUpdateLastPoint_ShouldCreateNewPoint() {
 		when(accessControl.getUserFromSecurityContext()).thenReturn(of(userDTO));
 		when(trackerMgr.getCurrentRoute(eq(USER_ID), any())).thenReturn(of(routeDTO));
 		when(trackerMgr.getLastPoint(ROUTE_ID)).thenReturn(empty());
@@ -131,48 +134,48 @@ public class TrackV1CtrlTest {
 		trackV1Ctrl.addPointV1(GGA_LATITUDE, GGA_LONGITUDE, ACCURACY, ALTITUDE);
 
 		verify(accessControl).getUserFromSecurityContext();
-		verify(trackerMgr, never()).createRoute(any());
-		verify(trackerMgr, never()).updatePoint(any(), any());
+		verify(trackerMgr, never()).createRoute(anyInt());
+		verify(trackerMgr, never()).updatePoint(anyLong(), any());
 		verify(trackerMgr).addPointToRoute(any(), any());
 	}
 	
 	@Test
-	public void shouldCreateNewRoute_ShouldNotUpdateLastPoint_ShouldCreateNewPoint() throws FelineApiException {
+	public void shouldCreateNewRoute_ShouldNotUpdateLastPoint_ShouldCreateNewPoint() {
 		when(accessControl.getUserFromSecurityContext()).thenReturn(of(userDTO));
-		when(trackerMgr.getCurrentRoute(any(), any())).thenReturn(empty());
-		when(trackerMgr.createRoute(any())).thenReturn(routeDTO);
+		when(trackerMgr.getCurrentRoute(anyInt(), any())).thenReturn(empty());
+		when(trackerMgr.createRoute(anyInt())).thenReturn(routeDTO);
 		when(trackerMgr.getLastPoint(ROUTE_ID)).thenReturn(empty());
 		
 		trackV1Ctrl.addPointV1(GGA_LATITUDE, GGA_LONGITUDE, ACCURACY, ALTITUDE);
 		
 		verify(accessControl).getUserFromSecurityContext();
-		verify(trackerMgr).createRoute(any());
-		verify(trackerMgr, never()).updatePoint(any(), any());
+		verify(trackerMgr).createRoute(anyInt());
+		verify(trackerMgr, never()).updatePoint(anyLong(), any());
 		verify(trackerMgr).addPointToRoute(any(), any());
 	}
 	
 	@Test(expected = UserServicesException.class)
-	public void addPointShouldThrowUserServicesException() throws FelineApiException {
+	public void addPointShouldThrowUserServicesException() {
 		when(accessControl.getUserFromSecurityContext()).thenReturn(empty());
 
 		trackV1Ctrl.addPointV1(GGA_LATITUDE, GGA_LONGITUDE, ACCURACY, ALTITUDE);
 	
 		verify(accessControl).getUserFromSecurityContext();
-		verify(trackerMgr, never()).createRoute(any());
-		verify(trackerMgr, never()).updatePoint(any(), any());
+		verify(trackerMgr, never()).createRoute(anyInt());
+		verify(trackerMgr, never()).updatePoint(anyLong(), any());
 		verify(trackerMgr, never()).addPointToRoute(any(), any());
 	}
 	
 	@Test(expected = ParserTrackerException.class)
-	public void addPointShouldThrowParserTrackerException() throws FelineApiException {
+	public void addPointShouldThrowParserTrackerException() {
 		when(accessControl.getUserFromSecurityContext()).thenReturn(of(userDTO));
 		when(trackerMgr.getCurrentRoute(eq(USER_ID), any())).thenReturn(of(routeDTO));
 
 		trackV1Ctrl.addPointV1(GGA_LATITUDE_WRONG_FORMAT, GGA_LONGITUDE, ACCURACY, ALTITUDE);
 	
 		verify(accessControl).getUserFromSecurityContext();
-		verify(trackerMgr, never()).createRoute(any());
-		verify(trackerMgr, never()).updatePoint(any(), any());
+		verify(trackerMgr, never()).createRoute(anyInt());
+		verify(trackerMgr, never()).updatePoint(anyLong(), any());
 		verify(trackerMgr, never()).addPointToRoute(any(), any());
 	}
 
@@ -208,46 +211,52 @@ public class TrackV1CtrlTest {
 	*/
 	
 	@Test
-	public void shouldReturnListOfRoutes() throws FelineApiException {
+	public void shouldReturnListOfRoutes() {
 		when(accessControl.getUserFromSecurityContext()).thenReturn(of(userDTO));
-		when(trackerMgr.getRouteByTraUserAndFromStartDate(USER_ID, FROM.toInstant(), TO.toInstant(), ORDER_DESC, PAGE, NUM_REGS_PER_PAGE)).thenReturn(listRouteDTO);
+		PageRequest pageRequest = getPageRequest(PAGE, NUM_REGS_PER_PAGE, ORDER_DESC);
+		when(trackerMgr.getRouteByTraUserAndFromStartDate(USER_ID, FROM.toInstant(), TO.toInstant(),pageRequest)).thenReturn(listRouteDTO);
 		
 		trackV1Ctrl.getListOfRoutesV1(FROM, TO, ORDER_DESC, PAGE, NUM_REGS_PER_PAGE);
 	
 		verify(accessControl).getUserFromSecurityContext();
-		verify(trackerMgr).getRouteByTraUserAndFromStartDate(USER_ID, FROM.toInstant(), TO.toInstant(), ORDER_DESC, PAGE, NUM_REGS_PER_PAGE);
+		verify(trackerMgr).getRouteByTraUserAndFromStartDate(USER_ID, FROM.toInstant(), TO.toInstant(), pageRequest);
 	}
 	
 	@Test(expected = UserServicesException.class)
-	public void listOfRoutesShouldThrowUserServicesException() throws FelineApiException {
+	public void listOfRoutesShouldThrowUserServicesException() {
 		when(accessControl.getUserFromSecurityContext()).thenReturn(empty());
 
 		trackV1Ctrl.getListOfRoutesV1(INVALID_FROM, TO, ORDER_DESC, PAGE, NUM_REGS_PER_PAGE);
 	
 		verify(accessControl, never()).getUserFromSecurityContext();
-		verify(trackerMgr, never()).getRouteByTraUserAndFromStartDate(any(), any(), any(), any(), any(), any());
+		verify(trackerMgr, never()).getRouteByTraUserAndFromStartDate(any(), any(), any(), any());
 	}
 	
 	@Test(expected = ParserTrackerException.class)
-	public void listOfRoutesShouldThrowParserTrackerException() throws FelineApiException {
+	public void listOfRoutesShouldThrowParserTrackerException() {
 		when(accessControl.getUserFromSecurityContext()).thenReturn(of(userDTO));
 		doThrow(new ParserTrackerException(1, "", new Exception())).when(trackValidator).validateGetTracks(INVALID_FROM.toInstant(), TO.toInstant(), ORDER_DESC, PAGE, NUM_REGS_PER_PAGE);
 		
 		trackV1Ctrl.getListOfRoutesV1(INVALID_FROM, TO, ORDER_DESC, PAGE, NUM_REGS_PER_PAGE);
 	
 		verify(accessControl).getUserFromSecurityContext();
-		verify(trackerMgr, never()).getRouteByTraUserAndFromStartDate(any(), any(), any(), any(), any(), any());
+		verify(trackerMgr, never()).getRouteByTraUserAndFromStartDate(any(), any(), any(), any());
 	}
 	
 	@Test(expected = FelineNoContentException.class)
-	public void listOfRoutesShouldThrowFelineNoContentException() throws FelineApiException {
+	public void listOfRoutesShouldThrowFelineNoContentException() {
 		when(accessControl.getUserFromSecurityContext()).thenReturn(of(userDTO));
-		doThrow(FelineNoContentException.Exceptions.NO_CONTENT.getException()).when(trackerMgr).getRouteByTraUserAndFromStartDate(USER_ID, FROM.toInstant(), TO.toInstant(), ORDER_DESC, PAGE, NUM_REGS_PER_PAGE);
+		PageRequest pageRequest = getPageRequest(PAGE, NUM_REGS_PER_PAGE, ORDER_DESC);
+		doThrow(FelineNoContentException.Exceptions.NO_CONTENT.getException()).when(trackerMgr).getRouteByTraUserAndFromStartDate(USER_ID, FROM.toInstant(), TO.toInstant(), pageRequest);
 		
 		trackV1Ctrl.getListOfRoutesV1(FROM, TO, ORDER_DESC, PAGE, NUM_REGS_PER_PAGE);
 	
 		verify(accessControl).getUserFromSecurityContext();
-		verify(trackerMgr).getRouteByTraUserAndFromStartDate(any(), any(), any(), any(), any(), any());
+		verify(trackerMgr).getRouteByTraUserAndFromStartDate(any(), any(), any(), any());
+	}
+	
+	private PageRequest getPageRequest(int page, int numRegistersPerPage, String orderAscDesc) {
+		return new PageRequest(page, numRegistersPerPage, Sort.Direction.valueOf(orderAscDesc), TrackV1Ctrl.ORDER_BY_START_DATE);
 	}
 	
 	/*
@@ -261,7 +270,7 @@ public class TrackV1CtrlTest {
 	 */
 	
 	@Test
-	public void shouldReturnListOfPoints() throws FelineApiException {
+	public void shouldReturnListOfPoints() {
 		when(accessControl.getUserFromSecurityContext()).thenReturn(of(userDTO));
 		when(trackerMgr.getPointsByTraRouteIdAndAppUserId(ROUTE_ID, USER_ID)).thenReturn(listPointDTO);
 		
@@ -272,7 +281,7 @@ public class TrackV1CtrlTest {
 	}
 	
 	@Test(expected = FelineNoContentException.class)
-	public void shouldThrowNoContentException() throws FelineApiException {
+	public void shouldThrowNoContentException() {
 		when(accessControl.getUserFromSecurityContext()).thenReturn(of(userDTO));
 		doThrow(FelineNoContentException.Exceptions.NO_CONTENT.getException()).when(trackerMgr).getPointsByTraRouteIdAndAppUserId(ROUTE_ID, USER_ID);
 		
@@ -283,7 +292,7 @@ public class TrackV1CtrlTest {
 	}
 	
 	@Test(expected = UserServicesException.class)
-	public void shouldThrowUserServicesException() throws FelineApiException {
+	public void shouldThrowUserServicesException() {
 		when(accessControl.getUserFromSecurityContext()).thenReturn(empty());
 
 		trackV1Ctrl.getListOfPointsByRouteV1(ROUTE_ID);
@@ -303,7 +312,7 @@ public class TrackV1CtrlTest {
 	*/
 
 	@Test
-	public void shouldReturnCentralPoint() throws FelineApiException {
+	public void shouldReturnCentralPoint() {
 		when(accessControl.getUserFromSecurityContext()).thenReturn(of(userDTO));
 		when(trackerMgr.getPointsByTraRouteIdAndAppUserId(ROUTE_ID, USER_ID)).thenReturn(listPointDTO);
 		
@@ -314,7 +323,7 @@ public class TrackV1CtrlTest {
 	}
 	
 	@Test(expected = UserServicesException.class)
-	public void getCentralPointShouldThrowUserServicesException() throws FelineApiException {
+	public void getCentralPointShouldThrowUserServicesException() {
 		when(accessControl.getUserFromSecurityContext()).thenReturn(empty());
 
 		trackV1Ctrl.getCentralPointV1(ROUTE_ID);
@@ -324,7 +333,7 @@ public class TrackV1CtrlTest {
 	}
 	
 	@Test(expected = FelineNoContentException.class)
-	public void getCentralPointShouldThrowFelineNoContentException() throws FelineApiException {
+	public void getCentralPointShouldThrowFelineNoContentException() {
 		when(accessControl.getUserFromSecurityContext()).thenReturn(of(userDTO));
 		doThrow(FelineNoContentException.Exceptions.NO_CONTENT.getException()).when(trackerMgr).getPointsByTraRouteIdAndAppUserId(ROUTE_ID, USER_ID);
 		

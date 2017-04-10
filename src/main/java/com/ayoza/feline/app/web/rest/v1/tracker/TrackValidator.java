@@ -6,8 +6,6 @@ import org.springframework.stereotype.Service;
 
 import com.ayoza.feline.web.rest.v1.exceptions.ParserTrackerException;
 
-import ayoza.com.feline.api.exceptions.FelineApiException;
-
 @Service
 public class TrackValidator {
 	
@@ -15,7 +13,7 @@ public class TrackValidator {
 	private static final String DESC = "DESC";
 	
 	public void validateGetTracks(Instant startDateFrom, Instant startDateTo, String orderAscDesc, Integer page,
-			Integer numRegistersPerPage) throws FelineApiException {
+			Integer numRegistersPerPage) {
 
 		if (startDateFrom != null && startDateTo != null) {
 			if (startDateFrom.isAfter(startDateTo)) {

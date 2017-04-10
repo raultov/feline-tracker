@@ -6,6 +6,7 @@ import static org.springframework.http.HttpStatus.BAD_REQUEST;
 import static org.springframework.http.HttpStatus.NO_CONTENT;
 import static org.springframework.http.HttpStatus.UNAUTHORIZED;
 import static org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR;
+import static org.springframework.http.HttpStatus.NOT_FOUND;
 
 import org.apache.log4j.Logger;
 import org.springframework.http.HttpHeaders;
@@ -23,6 +24,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 
 import ayoza.com.feline.api.exceptions.FelineApiException;
 import ayoza.com.feline.api.exceptions.FelineNoContentException;
+import ayoza.com.feline.api.exceptions.TrackerException;
 import ayoza.com.feline.api.exceptions.UserServicesException;
 
 @ControllerAdvice
@@ -73,6 +75,12 @@ public class ExceptionHandlerAdvice {
 	public ResponseEntity<String> handleUserServicesException(UserServicesException e) {
 		logger.debug("Exception ocurred: " + e.getMessage());
 		return new ResponseEntity<String>(objectNode(e), headers, UNAUTHORIZED);
+	}
+	
+	@ExceptionHandler(TrackerException.class)
+	public ResponseEntity<String> handleTrackerException(TrackerException e) {
+		logger.debug("Exception ocurred: " + e.getMessage());
+		return new ResponseEntity<String>(objectNode(e), headers, NOT_FOUND);
 	}
 	
 	@ExceptionHandler(Exception.class)

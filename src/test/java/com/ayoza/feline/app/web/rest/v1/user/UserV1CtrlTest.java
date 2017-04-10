@@ -53,7 +53,7 @@ public class UserV1CtrlTest {
 	}
 	
 	@Test(expected = UserServicesException.class)
-	public void invalidAppUserEmptyUserDTO() throws Exception {
+	public void invalidAppUserEmptyUserDTO() {
 		when(accessControl.getUserFromSecurityContext()).thenReturn(EMPTY_USER_DTO);
 		
 		userV1Ctrl.getAppUserV1();
@@ -63,7 +63,7 @@ public class UserV1CtrlTest {
 	}
 	
 	@Test(expected = UserServicesException.class)
-	public void invalidAppUserEmptyAppUserDTO() throws Exception {
+	public void invalidAppUserEmptyAppUserDTO() {
 		when(accessControl.getUserFromSecurityContext()).thenReturn(USER_DTO);
 		when(userServicesMgr.getApiUserByUserId(any())).thenReturn(EMPTY_APP_USER_DTO);
 		

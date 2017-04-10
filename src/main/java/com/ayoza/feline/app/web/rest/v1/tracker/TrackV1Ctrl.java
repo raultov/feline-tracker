@@ -15,6 +15,8 @@ import java.util.List;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -27,8 +29,6 @@ import com.ayoza.feline.app.web.rest.v1.access.AccessControl;
 import ayoza.com.feline.api.entities.common.dto.UserDTO;
 import ayoza.com.feline.api.entities.tracker.dto.PointDTO;
 import ayoza.com.feline.api.entities.tracker.dto.RouteDTO;
-import ayoza.com.feline.api.exceptions.FelineApiException;
-import ayoza.com.feline.api.exceptions.TrackerException;
 import ayoza.com.feline.api.exceptions.UserServicesException;
 import ayoza.com.feline.api.managers.tracker.TrackerMgr;
 import lombok.AccessLevel;
@@ -42,6 +42,7 @@ import lombok.experimental.FieldDefaults;
 public class TrackV1Ctrl {
 	
 	static final double MIN_DIFF = 0.0002;
+	static final String ORDER_BY_START_DATE = "startDate";
 	
 	TrackerMgr trackerMgr;
 	
@@ -56,7 +57,7 @@ public class TrackV1Ctrl {
 								@RequestParam(value="longitude", required=true)  String ggaLongitude, // 00338.5613W
 								@RequestParam(value="accuracy", required=false)  Double accuracy,
 								@RequestParam(value="altitude", required=false)  Double altitude
-							) throws FelineApiException {
+							) {
 		
 		UserDTO userDTO = accessControl.getUserFromSecurityContext()
 										.orElseThrow(() -> UserServicesException.Exceptions.USER_NOT_FOUND.getException());
@@ -82,11 +83,7 @@ public class TrackV1Ctrl {
 							.longitude(longitude)
 							.when(Instant.now())
 							.build();
-					try {
-						return trackerMgr.updatePoint(t.getPointId(), pointDTO);
-					} catch (TrackerException e) {
-						throw new RuntimeException(e);
-					}
+					return trackerMgr.updatePoint(t.getPointId(), pointDTO);
 				});
 
 		return updatedPoint.orElseGet(() -> {
@@ -109,7 +106,7 @@ public class TrackV1Ctrl {
     											@RequestParam(value="orderAscDesc") String orderAscDesc,
     											@RequestParam(value="page") Integer page,
     											@RequestParam(value="numRegistersPerPage") Integer numRegistersPerPage
-    					) throws FelineApiException {
+    					) {
 		
 		UserDTO userDTO = accessControl.getUserFromSecurityContext()
 				.orElseThrow(() -> UserServicesException.Exceptions.USER_NOT_FOUND.getException());
@@ -121,17 +118,16 @@ public class TrackV1Ctrl {
 											orderAscDesc,
 												page, numRegistersPerPage);
 		
+		PageRequest pageRequest = new PageRequest(page, numRegistersPerPage, Sort.Direction.valueOf(orderAscDesc), ORDER_BY_START_DATE);
 		
 		return trackerMgr.getRouteByTraUserAndFromStartDate(userDTO.getUserId(), 
 																startDateFrom, startDateTo,
-																orderAscDesc,
-																page, numRegistersPerPage);
+																pageRequest);
 	}
 	
 	@RequestMapping(value = "/{trackId}/points", method = GET, produces = APPLICATION_JSON_VALUE, headers = "Accept=*/*")
 	@ResponseBody
-	public List<PointDTO> getListOfPointsByRouteV1(@PathVariable(value = "trackId") Integer trackId)
-			throws FelineApiException {
+	public List<PointDTO> getListOfPointsByRouteV1(@PathVariable(value = "trackId") Integer trackId) {
 
 		UserDTO userDTO = accessControl.getUserFromSecurityContext()
 				.orElseThrow(() -> UserServicesException.Exceptions.USER_NOT_FOUND.getException());
@@ -143,7 +139,7 @@ public class TrackV1Ctrl {
     @ResponseBody
     public PointDTO getCentralPointV1(
     										@PathVariable(value="trackId") Integer routeId
-    								) throws FelineApiException {
+    								) {
 		
 		UserDTO userDTO = accessControl.getUserFromSecurityContext()
 				.orElseThrow(() -> UserServicesException.Exceptions.USER_NOT_FOUND.getException());
