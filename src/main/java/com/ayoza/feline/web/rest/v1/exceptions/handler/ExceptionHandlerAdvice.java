@@ -78,7 +78,7 @@ public class ExceptionHandlerAdvice {
 		return new ResponseEntity<String>(objectNode(e), headers, UNAUTHORIZED);
 	}
 	
-	@ExceptionHandler(UserServicesException.class)
+	@ExceptionHandler(UsernameNotFoundException.class)
 	public ResponseEntity<String> handleUsernameNotFoundException(UsernameNotFoundException e) {
 		logger.debug("Exception ocurred: " + e.getMessage());
 		return new ResponseEntity<String>(objectNode(UNAUTHORIZED.value(), e.getMessage()), headers, UNAUTHORIZED);
