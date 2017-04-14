@@ -1,18 +1,19 @@
 package com.ayoza.feline.web.rest.v1.exceptions.handler;
 
-import static org.springframework.http.HttpStatus.FORBIDDEN;
-import static org.springframework.http.HttpStatus.METHOD_NOT_ALLOWED;
 import static org.springframework.http.HttpStatus.BAD_REQUEST;
+import static org.springframework.http.HttpStatus.FORBIDDEN;
+import static org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR;
+import static org.springframework.http.HttpStatus.METHOD_NOT_ALLOWED;
+import static org.springframework.http.HttpStatus.NOT_FOUND;
 import static org.springframework.http.HttpStatus.NO_CONTENT;
 import static org.springframework.http.HttpStatus.UNAUTHORIZED;
-import static org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR;
-import static org.springframework.http.HttpStatus.NOT_FOUND;
 
 import org.apache.log4j.Logger;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.oauth2.common.exceptions.UnauthorizedUserException;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
@@ -75,6 +76,12 @@ public class ExceptionHandlerAdvice {
 	public ResponseEntity<String> handleUserServicesException(UserServicesException e) {
 		logger.debug("Exception ocurred: " + e.getMessage());
 		return new ResponseEntity<String>(objectNode(e), headers, UNAUTHORIZED);
+	}
+	
+	@ExceptionHandler(UserServicesException.class)
+	public ResponseEntity<String> handleUsernameNotFoundException(UsernameNotFoundException e) {
+		logger.debug("Exception ocurred: " + e.getMessage());
+		return new ResponseEntity<String>(objectNode(UNAUTHORIZED.value(), e.getMessage()), headers, UNAUTHORIZED);
 	}
 	
 	@ExceptionHandler(TrackerException.class)

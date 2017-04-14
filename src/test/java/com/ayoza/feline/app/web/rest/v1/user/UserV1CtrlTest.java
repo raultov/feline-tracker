@@ -6,6 +6,7 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static java.util.Optional.of;
 import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyInt;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.Optional;
@@ -43,13 +44,13 @@ public class UserV1CtrlTest {
 	@Test
 	public void validAppUser() throws Exception {
 		when(accessControl.getUserFromSecurityContext()).thenReturn(USER_DTO);
-		when(userServicesMgr.getApiUserByUserId(any())).thenReturn(APP_USER_DTO);
+		when(userServicesMgr.getApiUserByUserId(anyInt())).thenReturn(APP_USER_DTO);
 		
 		AppUserDTO appUserDTO = userV1Ctrl.getAppUserV1();
 		
 		assertThat(appUserDTO).isEqualTo(APP_USER_DTO.get());
 		verify(accessControl).getUserFromSecurityContext();
-		verify(userServicesMgr).getApiUserByUserId(any());
+		verify(userServicesMgr).getApiUserByUserId(anyInt());
 	}
 	
 	@Test(expected = UserServicesException.class)
@@ -65,7 +66,7 @@ public class UserV1CtrlTest {
 	@Test(expected = UserServicesException.class)
 	public void invalidAppUserEmptyAppUserDTO() {
 		when(accessControl.getUserFromSecurityContext()).thenReturn(USER_DTO);
-		when(userServicesMgr.getApiUserByUserId(any())).thenReturn(EMPTY_APP_USER_DTO);
+		when(userServicesMgr.getApiUserByUserId(anyInt())).thenReturn(EMPTY_APP_USER_DTO);
 		
 		userV1Ctrl.getAppUserV1();
 		
