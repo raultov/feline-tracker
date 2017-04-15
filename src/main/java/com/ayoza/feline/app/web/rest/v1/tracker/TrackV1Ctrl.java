@@ -120,7 +120,7 @@ public class TrackV1Ctrl {
 		
 		PageRequest pageRequest = new PageRequest(page, numRegistersPerPage, Sort.Direction.valueOf(orderAscDesc), ORDER_BY_START_DATE);
 		
-		return trackerMgr.getRouteByTraUserAndFromStartDate(userDTO.getUserId(), 
+		return trackerMgr.getRouteByAppUserAndFromStartDate(userDTO.getUserId(), 
 																startDateFrom, startDateTo,
 																pageRequest);
 	}

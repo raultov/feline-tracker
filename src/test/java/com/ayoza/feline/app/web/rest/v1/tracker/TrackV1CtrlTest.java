@@ -214,12 +214,12 @@ public class TrackV1CtrlTest {
 	public void shouldReturnListOfRoutes() {
 		when(accessControl.getUserFromSecurityContext()).thenReturn(of(userDTO));
 		PageRequest pageRequest = getPageRequest(PAGE, NUM_REGS_PER_PAGE, ORDER_DESC);
-		when(trackerMgr.getRouteByTraUserAndFromStartDate(USER_ID, FROM.toInstant(), TO.toInstant(),pageRequest)).thenReturn(listRouteDTO);
+		when(trackerMgr.getRouteByAppUserAndFromStartDate(USER_ID, FROM.toInstant(), TO.toInstant(),pageRequest)).thenReturn(listRouteDTO);
 		
 		trackV1Ctrl.getListOfRoutesV1(FROM, TO, ORDER_DESC, PAGE, NUM_REGS_PER_PAGE);
 	
 		verify(accessControl).getUserFromSecurityContext();
-		verify(trackerMgr).getRouteByTraUserAndFromStartDate(USER_ID, FROM.toInstant(), TO.toInstant(), pageRequest);
+		verify(trackerMgr).getRouteByAppUserAndFromStartDate(USER_ID, FROM.toInstant(), TO.toInstant(), pageRequest);
 	}
 	
 	@Test(expected = UserServicesException.class)
@@ -229,7 +229,7 @@ public class TrackV1CtrlTest {
 		trackV1Ctrl.getListOfRoutesV1(INVALID_FROM, TO, ORDER_DESC, PAGE, NUM_REGS_PER_PAGE);
 	
 		verify(accessControl, never()).getUserFromSecurityContext();
-		verify(trackerMgr, never()).getRouteByTraUserAndFromStartDate(any(), any(), any(), any());
+		verify(trackerMgr, never()).getRouteByAppUserAndFromStartDate(any(), any(), any(), any());
 	}
 	
 	@Test(expected = ParserTrackerException.class)
@@ -240,19 +240,19 @@ public class TrackV1CtrlTest {
 		trackV1Ctrl.getListOfRoutesV1(INVALID_FROM, TO, ORDER_DESC, PAGE, NUM_REGS_PER_PAGE);
 	
 		verify(accessControl).getUserFromSecurityContext();
-		verify(trackerMgr, never()).getRouteByTraUserAndFromStartDate(any(), any(), any(), any());
+		verify(trackerMgr, never()).getRouteByAppUserAndFromStartDate(any(), any(), any(), any());
 	}
 	
 	@Test(expected = FelineNoContentException.class)
 	public void listOfRoutesShouldThrowFelineNoContentException() {
 		when(accessControl.getUserFromSecurityContext()).thenReturn(of(userDTO));
 		PageRequest pageRequest = getPageRequest(PAGE, NUM_REGS_PER_PAGE, ORDER_DESC);
-		doThrow(FelineNoContentException.Exceptions.NO_CONTENT.getException()).when(trackerMgr).getRouteByTraUserAndFromStartDate(USER_ID, FROM.toInstant(), TO.toInstant(), pageRequest);
+		doThrow(FelineNoContentException.Exceptions.NO_CONTENT.getException()).when(trackerMgr).getRouteByAppUserAndFromStartDate(USER_ID, FROM.toInstant(), TO.toInstant(), pageRequest);
 		
 		trackV1Ctrl.getListOfRoutesV1(FROM, TO, ORDER_DESC, PAGE, NUM_REGS_PER_PAGE);
 	
 		verify(accessControl).getUserFromSecurityContext();
-		verify(trackerMgr).getRouteByTraUserAndFromStartDate(any(), any(), any(), any());
+		verify(trackerMgr).getRouteByAppUserAndFromStartDate(any(), any(), any(), any());
 	}
 	
 	private PageRequest getPageRequest(int page, int numRegistersPerPage, String orderAscDesc) {
