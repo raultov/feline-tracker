@@ -31,6 +31,8 @@ import ayoza.com.feline.api.entities.tracker.dto.PointDTO;
 import ayoza.com.feline.api.entities.tracker.dto.RouteDTO;
 import ayoza.com.feline.api.exceptions.FelineNoContentException;
 import ayoza.com.feline.api.exceptions.UserServicesException;
+import ayoza.com.feline.api.managers.tracker.PointMgr;
+import ayoza.com.feline.api.managers.tracker.RouteMgr;
 import ayoza.com.feline.api.managers.tracker.TrackerMgr;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -79,6 +81,12 @@ public class TrackV1CtrlTest {
 	private TrackerMgr trackerMgr;
 	
 	@Mock
+	private RouteMgr routeMgr;
+	
+	@Mock
+	private PointMgr pointMgr;
+	
+	@Mock
 	private AccessControl accessControl;
 	
 	@Mock
@@ -99,58 +107,58 @@ public class TrackV1CtrlTest {
 	@Test
 	public void existingLastPoint_ShouldNotCreateNewRoute_ShouldNotUpdateLastPoint_ShouldCreateNewPoint() {
 		when(accessControl.getUserFromSecurityContext()).thenReturn(of(userDTO));
-		when(trackerMgr.getCurrentRoute(eq(USER_ID), any())).thenReturn(of(routeDTO));
-		when(trackerMgr.getLastPoint(ROUTE_ID)).thenReturn(of(lastFarawayPointDTO));
+		when(routeMgr.getCurrentRoute(eq(USER_ID), any())).thenReturn(of(routeDTO));
+		when(pointMgr.getLastPoint(ROUTE_ID)).thenReturn(of(lastFarawayPointDTO));
 		
 		trackV1Ctrl.addPointV1(GGA_LATITUDE, GGA_LONGITUDE, ACCURACY, ALTITUDE);
 		
 		verify(accessControl).getUserFromSecurityContext();
-		verify(trackerMgr, never()).createRoute(anyInt());
-		verify(trackerMgr, never()).updatePoint(anyLong(), any());
+		verify(routeMgr, never()).createRoute(anyInt());
+		verify(pointMgr, never()).updatePoint(anyLong(), any());
 		verify(trackerMgr).addPointToRoute(any(), any());
 	}
 	
 	@Test
 	public void existingLastPoint_ShouldNotCreateNewRoute_ShouldUpdateLastPoint_ShouldNotCreateNewPoint() {
 		when(accessControl.getUserFromSecurityContext()).thenReturn(of(userDTO));
-		when(trackerMgr.getCurrentRoute(eq(USER_ID), any())).thenReturn(of(routeDTO));
-		when(trackerMgr.getLastPoint(ROUTE_ID)).thenReturn(of(lastClosePointDTO));
-		when(trackerMgr.updatePoint(anyLong(), any())).thenReturn(lastClosePointDTO);
+		when(routeMgr.getCurrentRoute(eq(USER_ID), any())).thenReturn(of(routeDTO));
+		when(pointMgr.getLastPoint(ROUTE_ID)).thenReturn(of(lastClosePointDTO));
+		when(pointMgr.updatePoint(anyLong(), any())).thenReturn(lastClosePointDTO);
 		
 		trackV1Ctrl.addPointV1(GGA_LATITUDE, GGA_LONGITUDE, ACCURACY, ALTITUDE);
 
 		verify(accessControl).getUserFromSecurityContext();
-		verify(trackerMgr, never()).createRoute(anyInt());
-		verify(trackerMgr).updatePoint(anyLong(), any());
+		verify(routeMgr, never()).createRoute(anyInt());
+		verify(pointMgr).updatePoint(anyLong(), any());
 		verify(trackerMgr, never()).addPointToRoute(any(), any());
 	}
 	
 	@Test
 	public void nonExistingLastPoint_ShouldNotCreateNewRoute_ShouldNotUpdateLastPoint_ShouldCreateNewPoint() {
 		when(accessControl.getUserFromSecurityContext()).thenReturn(of(userDTO));
-		when(trackerMgr.getCurrentRoute(eq(USER_ID), any())).thenReturn(of(routeDTO));
-		when(trackerMgr.getLastPoint(ROUTE_ID)).thenReturn(empty());
+		when(routeMgr.getCurrentRoute(eq(USER_ID), any())).thenReturn(of(routeDTO));
+		when(pointMgr.getLastPoint(ROUTE_ID)).thenReturn(empty());
 		
 		trackV1Ctrl.addPointV1(GGA_LATITUDE, GGA_LONGITUDE, ACCURACY, ALTITUDE);
 
 		verify(accessControl).getUserFromSecurityContext();
-		verify(trackerMgr, never()).createRoute(anyInt());
-		verify(trackerMgr, never()).updatePoint(anyLong(), any());
+		verify(routeMgr, never()).createRoute(anyInt());
+		verify(pointMgr, never()).updatePoint(anyLong(), any());
 		verify(trackerMgr).addPointToRoute(any(), any());
 	}
 	
 	@Test
 	public void shouldCreateNewRoute_ShouldNotUpdateLastPoint_ShouldCreateNewPoint() {
 		when(accessControl.getUserFromSecurityContext()).thenReturn(of(userDTO));
-		when(trackerMgr.getCurrentRoute(anyInt(), any())).thenReturn(empty());
-		when(trackerMgr.createRoute(anyInt())).thenReturn(routeDTO);
-		when(trackerMgr.getLastPoint(ROUTE_ID)).thenReturn(empty());
+		when(routeMgr.getCurrentRoute(anyInt(), any())).thenReturn(empty());
+		when(routeMgr.createRoute(anyInt())).thenReturn(routeDTO);
+		when(pointMgr.getLastPoint(ROUTE_ID)).thenReturn(empty());
 		
 		trackV1Ctrl.addPointV1(GGA_LATITUDE, GGA_LONGITUDE, ACCURACY, ALTITUDE);
 		
 		verify(accessControl).getUserFromSecurityContext();
-		verify(trackerMgr).createRoute(anyInt());
-		verify(trackerMgr, never()).updatePoint(anyLong(), any());
+		verify(routeMgr).createRoute(anyInt());
+		verify(pointMgr, never()).updatePoint(anyLong(), any());
 		verify(trackerMgr).addPointToRoute(any(), any());
 	}
 	
@@ -161,21 +169,21 @@ public class TrackV1CtrlTest {
 		trackV1Ctrl.addPointV1(GGA_LATITUDE, GGA_LONGITUDE, ACCURACY, ALTITUDE);
 	
 		verify(accessControl).getUserFromSecurityContext();
-		verify(trackerMgr, never()).createRoute(anyInt());
-		verify(trackerMgr, never()).updatePoint(anyLong(), any());
+		verify(routeMgr, never()).createRoute(anyInt());
+		verify(pointMgr, never()).updatePoint(anyLong(), any());
 		verify(trackerMgr, never()).addPointToRoute(any(), any());
 	}
 	
 	@Test(expected = ParserTrackerException.class)
 	public void addPointShouldThrowParserTrackerException() {
 		when(accessControl.getUserFromSecurityContext()).thenReturn(of(userDTO));
-		when(trackerMgr.getCurrentRoute(eq(USER_ID), any())).thenReturn(of(routeDTO));
+		when(routeMgr.getCurrentRoute(eq(USER_ID), any())).thenReturn(of(routeDTO));
 
 		trackV1Ctrl.addPointV1(GGA_LATITUDE_WRONG_FORMAT, GGA_LONGITUDE, ACCURACY, ALTITUDE);
 	
 		verify(accessControl).getUserFromSecurityContext();
-		verify(trackerMgr, never()).createRoute(anyInt());
-		verify(trackerMgr, never()).updatePoint(anyLong(), any());
+		verify(routeMgr, never()).createRoute(anyInt());
+		verify(pointMgr, never()).updatePoint(anyLong(), any());
 		verify(trackerMgr, never()).addPointToRoute(any(), any());
 	}
 
@@ -214,12 +222,12 @@ public class TrackV1CtrlTest {
 	public void shouldReturnListOfRoutes() {
 		when(accessControl.getUserFromSecurityContext()).thenReturn(of(userDTO));
 		PageRequest pageRequest = getPageRequest(PAGE, NUM_REGS_PER_PAGE, ORDER_DESC);
-		when(trackerMgr.getRouteByAppUserAndFromStartDate(USER_ID, FROM.toInstant(), TO.toInstant(),pageRequest)).thenReturn(listRouteDTO);
+		when(routeMgr.getRouteByAppUserAndFromStartDate(USER_ID, FROM.toInstant(), TO.toInstant(),pageRequest)).thenReturn(listRouteDTO);
 		
 		trackV1Ctrl.getListOfRoutesV1(FROM, TO, ORDER_DESC, PAGE, NUM_REGS_PER_PAGE);
 	
 		verify(accessControl).getUserFromSecurityContext();
-		verify(trackerMgr).getRouteByAppUserAndFromStartDate(USER_ID, FROM.toInstant(), TO.toInstant(), pageRequest);
+		verify(routeMgr).getRouteByAppUserAndFromStartDate(USER_ID, FROM.toInstant(), TO.toInstant(), pageRequest);
 	}
 	
 	@Test(expected = UserServicesException.class)
@@ -229,7 +237,7 @@ public class TrackV1CtrlTest {
 		trackV1Ctrl.getListOfRoutesV1(INVALID_FROM, TO, ORDER_DESC, PAGE, NUM_REGS_PER_PAGE);
 	
 		verify(accessControl, never()).getUserFromSecurityContext();
-		verify(trackerMgr, never()).getRouteByAppUserAndFromStartDate(any(), any(), any(), any());
+		verify(routeMgr, never()).getRouteByAppUserAndFromStartDate(any(), any(), any(), any());
 	}
 	
 	@Test(expected = ParserTrackerException.class)
@@ -240,19 +248,19 @@ public class TrackV1CtrlTest {
 		trackV1Ctrl.getListOfRoutesV1(INVALID_FROM, TO, ORDER_DESC, PAGE, NUM_REGS_PER_PAGE);
 	
 		verify(accessControl).getUserFromSecurityContext();
-		verify(trackerMgr, never()).getRouteByAppUserAndFromStartDate(any(), any(), any(), any());
+		verify(routeMgr, never()).getRouteByAppUserAndFromStartDate(any(), any(), any(), any());
 	}
 	
 	@Test(expected = FelineNoContentException.class)
 	public void listOfRoutesShouldThrowFelineNoContentException() {
 		when(accessControl.getUserFromSecurityContext()).thenReturn(of(userDTO));
 		PageRequest pageRequest = getPageRequest(PAGE, NUM_REGS_PER_PAGE, ORDER_DESC);
-		doThrow(FelineNoContentException.Exceptions.NO_CONTENT.getException()).when(trackerMgr).getRouteByAppUserAndFromStartDate(USER_ID, FROM.toInstant(), TO.toInstant(), pageRequest);
+		doThrow(FelineNoContentException.Exceptions.NO_CONTENT.getException()).when(routeMgr).getRouteByAppUserAndFromStartDate(USER_ID, FROM.toInstant(), TO.toInstant(), pageRequest);
 		
 		trackV1Ctrl.getListOfRoutesV1(FROM, TO, ORDER_DESC, PAGE, NUM_REGS_PER_PAGE);
 	
 		verify(accessControl).getUserFromSecurityContext();
-		verify(trackerMgr).getRouteByAppUserAndFromStartDate(any(), any(), any(), any());
+		verify(routeMgr).getRouteByAppUserAndFromStartDate(any(), any(), any(), any());
 	}
 	
 	private PageRequest getPageRequest(int page, int numRegistersPerPage, String orderAscDesc) {
@@ -272,23 +280,23 @@ public class TrackV1CtrlTest {
 	@Test
 	public void shouldReturnListOfPoints() {
 		when(accessControl.getUserFromSecurityContext()).thenReturn(of(userDTO));
-		when(trackerMgr.getPointsByTraRouteIdAndAppUserId(ROUTE_ID, USER_ID)).thenReturn(listPointDTO);
+		when(pointMgr.getPointsByTraRouteIdAndAppUserId(ROUTE_ID, USER_ID)).thenReturn(listPointDTO);
 		
 		trackV1Ctrl.getListOfPointsByRouteV1(ROUTE_ID);
 		
 		verify(accessControl).getUserFromSecurityContext();
-		verify(trackerMgr).getPointsByTraRouteIdAndAppUserId(ROUTE_ID, USER_ID);
+		verify(pointMgr).getPointsByTraRouteIdAndAppUserId(ROUTE_ID, USER_ID);
 	}
 	
 	@Test(expected = FelineNoContentException.class)
 	public void shouldThrowNoContentException() {
 		when(accessControl.getUserFromSecurityContext()).thenReturn(of(userDTO));
-		doThrow(FelineNoContentException.Exceptions.NO_CONTENT.getException()).when(trackerMgr).getPointsByTraRouteIdAndAppUserId(ROUTE_ID, USER_ID);
+		doThrow(FelineNoContentException.Exceptions.NO_CONTENT.getException()).when(pointMgr).getPointsByTraRouteIdAndAppUserId(ROUTE_ID, USER_ID);
 		
 		trackV1Ctrl.getListOfPointsByRouteV1(ROUTE_ID);
 	
 		verify(accessControl).getUserFromSecurityContext();
-		verify(trackerMgr).getPointsByTraRouteIdAndAppUserId(ROUTE_ID, USER_ID);
+		verify(pointMgr).getPointsByTraRouteIdAndAppUserId(ROUTE_ID, USER_ID);
 	}
 	
 	@Test(expected = UserServicesException.class)
@@ -298,7 +306,7 @@ public class TrackV1CtrlTest {
 		trackV1Ctrl.getListOfPointsByRouteV1(ROUTE_ID);
 	
 		verify(accessControl).getUserFromSecurityContext();
-		verify(trackerMgr, never()).getPointsByTraRouteIdAndAppUserId(ROUTE_ID, USER_ID);
+		verify(pointMgr, never()).getPointsByTraRouteIdAndAppUserId(ROUTE_ID, USER_ID);
 	}
 	
 	/*
@@ -314,12 +322,12 @@ public class TrackV1CtrlTest {
 	@Test
 	public void shouldReturnCentralPoint() {
 		when(accessControl.getUserFromSecurityContext()).thenReturn(of(userDTO));
-		when(trackerMgr.getPointsByTraRouteIdAndAppUserId(ROUTE_ID, USER_ID)).thenReturn(listPointDTO);
+		when(pointMgr.getPointsByTraRouteIdAndAppUserId(ROUTE_ID, USER_ID)).thenReturn(listPointDTO);
 		
 		trackV1Ctrl.getCentralPointV1(ROUTE_ID);
 		
 		verify(accessControl).getUserFromSecurityContext();
-		verify(trackerMgr).getPointsByTraRouteIdAndAppUserId(ROUTE_ID, USER_ID);
+		verify(pointMgr).getPointsByTraRouteIdAndAppUserId(ROUTE_ID, USER_ID);
 	}
 	
 	@Test(expected = UserServicesException.class)
@@ -329,17 +337,17 @@ public class TrackV1CtrlTest {
 		trackV1Ctrl.getCentralPointV1(ROUTE_ID);
 	
 		verify(accessControl).getUserFromSecurityContext();
-		verify(trackerMgr, never()).getPointsByTraRouteIdAndAppUserId(ROUTE_ID, USER_ID);
+		verify(pointMgr, never()).getPointsByTraRouteIdAndAppUserId(ROUTE_ID, USER_ID);
 	}
 	
 	@Test(expected = FelineNoContentException.class)
 	public void getCentralPointShouldThrowFelineNoContentException() {
 		when(accessControl.getUserFromSecurityContext()).thenReturn(of(userDTO));
-		doThrow(FelineNoContentException.Exceptions.NO_CONTENT.getException()).when(trackerMgr).getPointsByTraRouteIdAndAppUserId(ROUTE_ID, USER_ID);
+		doThrow(FelineNoContentException.Exceptions.NO_CONTENT.getException()).when(pointMgr).getPointsByTraRouteIdAndAppUserId(ROUTE_ID, USER_ID);
 		
 		trackV1Ctrl.getCentralPointV1(ROUTE_ID);
 		
 		verify(accessControl).getUserFromSecurityContext();
-		verify(trackerMgr).getPointsByTraRouteIdAndAppUserId(ROUTE_ID, USER_ID);
+		verify(pointMgr).getPointsByTraRouteIdAndAppUserId(ROUTE_ID, USER_ID);
 	}
 }

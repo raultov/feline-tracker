@@ -30,6 +30,8 @@ import ayoza.com.feline.api.entities.common.dto.UserDTO;
 import ayoza.com.feline.api.entities.tracker.dto.PointDTO;
 import ayoza.com.feline.api.entities.tracker.dto.RouteDTO;
 import ayoza.com.feline.api.exceptions.UserServicesException;
+import ayoza.com.feline.api.managers.tracker.PointMgr;
+import ayoza.com.feline.api.managers.tracker.RouteMgr;
 import ayoza.com.feline.api.managers.tracker.TrackerMgr;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -45,6 +47,10 @@ public class TrackV1Ctrl {
 	static final String ORDER_BY_START_DATE = "startDate";
 	
 	TrackerMgr trackerMgr;
+	
+	RouteMgr routeMgr;
+	
+	PointMgr pointMgr;
 	
 	AccessControl accessControl;
 	
@@ -64,13 +70,13 @@ public class TrackV1Ctrl {
 		
 		Instant from = Instant.now().minus(2, ChronoUnit.MINUTES);
 		
-		RouteDTO routeDTO = trackerMgr.getCurrentRoute(userDTO.getUserId(), from)
-							.orElseGet((() -> trackerMgr.createRoute(userDTO.getUserId())));
+		RouteDTO routeDTO = routeMgr.getCurrentRoute(userDTO.getUserId(), from)
+							.orElseGet((() -> routeMgr.createRoute(userDTO.getUserId())));
 		
 		Double latitude = convertToDecimalDegrees(ggaLatitude);
 		Double longitude = convertToDecimalDegrees(ggaLongitude);
 		
-		Optional<PointDTO> lastPoint = trackerMgr.getLastPoint(routeDTO.getRouteId());
+		Optional<PointDTO> lastPoint = pointMgr.getLastPoint(routeDTO.getRouteId());
 
 		Optional<PointDTO> updatedPoint = lastPoint
 				.filter(t -> abs(t.getLatitude() - latitude) < MIN_DIFF)
@@ -83,7 +89,7 @@ public class TrackV1Ctrl {
 							.longitude(longitude)
 							.when(Instant.now())
 							.build();
-					return trackerMgr.updatePoint(t.getPointId(), pointDTO);
+					return pointMgr.updatePoint(t.getPointId(), pointDTO);
 				});
 
 		return updatedPoint.orElseGet(() -> {
@@ -120,7 +126,7 @@ public class TrackV1Ctrl {
 		
 		PageRequest pageRequest = new PageRequest(page, numRegistersPerPage, Sort.Direction.valueOf(orderAscDesc), ORDER_BY_START_DATE);
 		
-		return trackerMgr.getRouteByAppUserAndFromStartDate(userDTO.getUserId(), 
+		return routeMgr.getRouteByAppUserAndFromStartDate(userDTO.getUserId(), 
 																startDateFrom, startDateTo,
 																pageRequest);
 	}
@@ -132,7 +138,7 @@ public class TrackV1Ctrl {
 		UserDTO userDTO = accessControl.getUserFromSecurityContext()
 				.orElseThrow(() -> UserServicesException.Exceptions.USER_NOT_FOUND.getException());
 
-		return trackerMgr.getPointsByTraRouteIdAndAppUserId(trackId, userDTO.getUserId());
+		return pointMgr.getPointsByTraRouteIdAndAppUserId(trackId, userDTO.getUserId());
 	}
 	
 	@RequestMapping(value = "/{trackId}/center", method = GET, produces = APPLICATION_JSON_VALUE, headers="Accept=*/*")
@@ -144,7 +150,7 @@ public class TrackV1Ctrl {
 		UserDTO userDTO = accessControl.getUserFromSecurityContext()
 				.orElseThrow(() -> UserServicesException.Exceptions.USER_NOT_FOUND.getException());
 
-		List<PointDTO> list = trackerMgr.getPointsByTraRouteIdAndAppUserId(routeId, userDTO.getUserId());
+		List<PointDTO> list = pointMgr.getPointsByTraRouteIdAndAppUserId(routeId, userDTO.getUserId());
 		return getCentralApiTraPoint(list);
 	}
 }
