@@ -15,7 +15,7 @@ import com.ayoza.feline.app.web.rest.v1.access.AccessControl;
 import ayoza.com.feline.api.app.dto.AppUserDTO;
 import ayoza.com.feline.api.entities.common.dto.UserDTO;
 import ayoza.com.feline.api.exceptions.UserServicesException;
-import ayoza.com.feline.api.managers.UserServicesMgr;
+import ayoza.com.feline.api.managers.AppUserMgr;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -26,7 +26,7 @@ import lombok.experimental.FieldDefaults;
 @FieldDefaults(level=AccessLevel.PRIVATE)
 public class UserV1Ctrl {
 	
-	private UserServicesMgr userServicesMgr;
+	private AppUserMgr appUserMgr;
 	private AccessControl accessControl;
 	
 	@RequestMapping(value = "", method = GET, produces = MediaType.APPLICATION_JSON_VALUE, headers="Accept=*/*")
@@ -34,7 +34,7 @@ public class UserV1Ctrl {
     public AppUserDTO getAppUserV1() {
 		UserDTO userDTO = accessControl.getUserFromSecurityContext()
 				.orElseThrow(() -> UserServicesException.Exceptions.USER_NOT_FOUND.getException());
-		Optional<AppUserDTO> appUserDTO = userServicesMgr.getApiUserByUserId(userDTO.getUserId());
+		Optional<AppUserDTO> appUserDTO = appUserMgr.getApiUserByUserId(userDTO.getUserId());
 		return appUserDTO.orElseThrow(() -> UserServicesException.Exceptions.USER_NOT_FOUND.getException());
 	}
 }

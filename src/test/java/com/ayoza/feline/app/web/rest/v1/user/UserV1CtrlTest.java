@@ -1,13 +1,13 @@
 package com.ayoza.feline.app.web.rest.v1.user;
 
-import static org.mockito.Mockito.when;
+import static java.util.Optional.of;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyInt;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
-import static java.util.Optional.of;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyInt;
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.when;
 
 import java.util.Optional;
 
@@ -22,7 +22,7 @@ import com.ayoza.feline.app.web.rest.v1.access.AccessControl;
 import ayoza.com.feline.api.app.dto.AppUserDTO;
 import ayoza.com.feline.api.entities.common.dto.UserDTO;
 import ayoza.com.feline.api.exceptions.UserServicesException;
-import ayoza.com.feline.api.managers.UserServicesMgr;
+import ayoza.com.feline.api.managers.AppUserMgr;
 
 @RunWith(MockitoJUnitRunner.class)
 public class UserV1CtrlTest {
@@ -33,7 +33,7 @@ public class UserV1CtrlTest {
 	private static final Optional<AppUserDTO> EMPTY_APP_USER_DTO = Optional.empty();
 
 	@Mock
-	private UserServicesMgr userServicesMgr;
+	private AppUserMgr appUserMgr;
 	
 	@Mock
 	private AccessControl accessControl;
@@ -44,13 +44,13 @@ public class UserV1CtrlTest {
 	@Test
 	public void validAppUser() throws Exception {
 		when(accessControl.getUserFromSecurityContext()).thenReturn(USER_DTO);
-		when(userServicesMgr.getApiUserByUserId(anyInt())).thenReturn(APP_USER_DTO);
+		when(appUserMgr.getApiUserByUserId(anyInt())).thenReturn(APP_USER_DTO);
 		
 		AppUserDTO appUserDTO = userV1Ctrl.getAppUserV1();
 		
 		assertThat(appUserDTO).isEqualTo(APP_USER_DTO.get());
 		verify(accessControl).getUserFromSecurityContext();
-		verify(userServicesMgr).getApiUserByUserId(anyInt());
+		verify(appUserMgr).getApiUserByUserId(anyInt());
 	}
 	
 	@Test(expected = UserServicesException.class)
@@ -60,17 +60,17 @@ public class UserV1CtrlTest {
 		userV1Ctrl.getAppUserV1();
 		
 		verify(accessControl).getUserFromSecurityContext();
-		verify(userServicesMgr, never()).getApiUserByUserId(any());
+		verify(appUserMgr, never()).getApiUserByUserId(any());
 	}
 	
 	@Test(expected = UserServicesException.class)
 	public void invalidAppUserEmptyAppUserDTO() {
 		when(accessControl.getUserFromSecurityContext()).thenReturn(USER_DTO);
-		when(userServicesMgr.getApiUserByUserId(anyInt())).thenReturn(EMPTY_APP_USER_DTO);
+		when(appUserMgr.getApiUserByUserId(anyInt())).thenReturn(EMPTY_APP_USER_DTO);
 		
 		userV1Ctrl.getAppUserV1();
 		
 		verify(accessControl).getUserFromSecurityContext();
-		verify(userServicesMgr).getApiUserByUserId(any());
+		verify(appUserMgr).getApiUserByUserId(any());
 	}
 }
