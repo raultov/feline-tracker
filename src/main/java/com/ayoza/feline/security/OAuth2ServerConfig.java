@@ -41,7 +41,8 @@ public class OAuth2ServerConfig {
 				.requestMatchers().antMatchers(
 											   "/oauth/token/revoke",
 											   "/v1/tracks/**",
-											   "/v1/users/**"
+											   "/v1/users/**",
+											   "/v1/trackers/**"
 											   )
 				.and()
 			.authorizeRequests()
@@ -53,6 +54,8 @@ public class OAuth2ServerConfig {
                 .antMatchers(HttpMethod.GET, "/v1/tracks/*/points").access("#oauth2.hasScope('general') and hasRole('ROLE_APP_USER')")
               
                 .antMatchers(HttpMethod.GET, "/v1/users").access("#oauth2.hasScope('general') and hasRole('ROLE_APP_USER')")
+                
+                .antMatchers(HttpMethod.GET, "/v1/trackers").access("#oauth2.hasScope('general') and hasRole('ROLE_APP_USER')")
                 ;                
 
             // @formatter:off
@@ -81,7 +84,7 @@ public class OAuth2ServerConfig {
 			 			.authorizedGrantTypes("password", "client_credentials", "refresh_token")
 			 			.authorities("ROLE_CLIENT")
 			 			.scopes("general")
-                        .secret("client-with-refresh-token-secret") // FIXME Change this password before going to production environment
+                        .secret("client-with-refresh-token-secret") // FIXME Change this password before going to PROD
                         .and()
             ;
         }

@@ -26,10 +26,8 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.ayoza.feline.app.web.rest.v1.access.AccessControl;
 
-import ayoza.com.feline.api.entities.common.dto.UserDTO;
 import ayoza.com.feline.api.entities.tracker.dto.PointDTO;
 import ayoza.com.feline.api.entities.tracker.dto.RouteDTO;
-import ayoza.com.feline.api.exceptions.UserServicesException;
 import ayoza.com.feline.api.managers.tracker.PointMgr;
 import ayoza.com.feline.api.managers.tracker.RouteMgr;
 import ayoza.com.feline.api.managers.tracker.TrackerMgr;
@@ -65,13 +63,11 @@ public class TrackV1Ctrl {
 								@RequestParam(value="altitude", required=false)  Double altitude
 							) {
 		
-		UserDTO userDTO = accessControl.getUserFromSecurityContext()
-										.orElseThrow(() -> UserServicesException.Exceptions.USER_NOT_FOUND.getException());
-		
 		Instant from = Instant.now().minus(2, ChronoUnit.MINUTES);
 		
-		RouteDTO routeDTO = routeMgr.getCurrentRoute(userDTO.getUserId(), from)
-							.orElseGet((() -> routeMgr.createRoute(userDTO.getUserId())));
+		int userId = accessControl.getUserIdFromSecurityContext();
+		RouteDTO routeDTO = routeMgr.getCurrentRoute(userId, from)
+							.orElseGet((() -> routeMgr.createRoute(userId)));
 		
 		Double latitude = convertToDecimalDegrees(ggaLatitude);
 		Double longitude = convertToDecimalDegrees(ggaLongitude);
@@ -114,8 +110,7 @@ public class TrackV1Ctrl {
     											@RequestParam(value="numRegistersPerPage") Integer numRegistersPerPage
     					) {
 		
-		UserDTO userDTO = accessControl.getUserFromSecurityContext()
-				.orElseThrow(() -> UserServicesException.Exceptions.USER_NOT_FOUND.getException());
+		int userId = accessControl.getUserIdFromSecurityContext();
 		
 		Instant startDateFrom = from.toInstant();
 		Instant startDateTo = to.toInstant();
@@ -126,19 +121,15 @@ public class TrackV1Ctrl {
 		
 		PageRequest pageRequest = new PageRequest(page, numRegistersPerPage, Sort.Direction.valueOf(orderAscDesc), ORDER_BY_START_DATE);
 		
-		return routeMgr.getRouteByAppUserAndFromStartDate(userDTO.getUserId(), 
-																startDateFrom, startDateTo,
+		return routeMgr.getRouteByAppUserAndFromStartDate(userId, 
+															startDateFrom, startDateTo,
 																pageRequest);
 	}
 	
 	@RequestMapping(value = "/{trackId}/points", method = GET, produces = APPLICATION_JSON_VALUE, headers = "Accept=*/*")
 	@ResponseBody
 	public List<PointDTO> getListOfPointsByRouteV1(@PathVariable(value = "trackId") Integer trackId) {
-
-		UserDTO userDTO = accessControl.getUserFromSecurityContext()
-				.orElseThrow(() -> UserServicesException.Exceptions.USER_NOT_FOUND.getException());
-
-		return pointMgr.getPointsByTraRouteIdAndAppUserId(trackId, userDTO.getUserId());
+		return pointMgr.getPointsByTraRouteIdAndAppUserId(trackId, accessControl.getUserIdFromSecurityContext());
 	}
 	
 	@RequestMapping(value = "/{trackId}/center", method = GET, produces = APPLICATION_JSON_VALUE, headers="Accept=*/*")
@@ -146,11 +137,8 @@ public class TrackV1Ctrl {
     public PointDTO getCentralPointV1(
     										@PathVariable(value="trackId") Integer routeId
     								) {
-		
-		UserDTO userDTO = accessControl.getUserFromSecurityContext()
-				.orElseThrow(() -> UserServicesException.Exceptions.USER_NOT_FOUND.getException());
 
-		List<PointDTO> list = pointMgr.getPointsByTraRouteIdAndAppUserId(routeId, userDTO.getUserId());
+		List<PointDTO> list = pointMgr.getPointsByTraRouteIdAndAppUserId(routeId, accessControl.getUserIdFromSecurityContext());
 		return getCentralApiTraPoint(list);
 	}
 }

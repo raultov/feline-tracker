@@ -3,6 +3,8 @@ package com.ayoza.feline.app.web.rest.v1.tracker;
 import static java.util.Collections.singletonList;
 import static java.util.Optional.empty;
 import static java.util.Optional.of;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyInt;
 import static org.mockito.Matchers.anyLong;
@@ -26,11 +28,9 @@ import org.springframework.data.domain.Sort;
 import com.ayoza.feline.app.web.rest.v1.access.AccessControl;
 import com.ayoza.feline.web.rest.v1.exceptions.ParserTrackerException;
 
-import ayoza.com.feline.api.entities.common.dto.UserDTO;
 import ayoza.com.feline.api.entities.tracker.dto.PointDTO;
 import ayoza.com.feline.api.entities.tracker.dto.RouteDTO;
 import ayoza.com.feline.api.exceptions.FelineNoContentException;
-import ayoza.com.feline.api.exceptions.UserServicesException;
 import ayoza.com.feline.api.managers.tracker.PointMgr;
 import ayoza.com.feline.api.managers.tracker.RouteMgr;
 import ayoza.com.feline.api.managers.tracker.TrackerMgr;
@@ -69,13 +69,12 @@ public class TrackV1CtrlTest {
 	private final static int PAGE = 1;
 	private final static int NUM_REGS_PER_PAGE = 10;
 	
-	private final UserDTO userDTO = forgeUserDTO();
-	private final RouteDTO routeDTO = RouteDTO.builder().routeId(ROUTE_ID).build();
-	private final PointDTO lastFarawayPointDTO = forgeLastFarawayPointDTO();
-	private final PointDTO lastClosePointDTO = forgeLastClosePointDTO();
-	private final PointDTO pointDTO = PointDTO.builder().pointId(POINT_ID).build();
-	private final List<RouteDTO> listRouteDTO = singletonList(routeDTO);
-	private final List<PointDTO> listPointDTO = singletonList(pointDTO);
+	private final static RouteDTO ROUTE_DTO = RouteDTO.builder().routeId(ROUTE_ID).build();
+	private final static PointDTO LAST_FARAWAY_POINT_DTO = forgeLastFarawayPointDTO();
+	private final static PointDTO LAST_CLOSE_POINT_DTO = forgeLastClosePointDTO();
+	private final static PointDTO POINT_DTO = PointDTO.builder().pointId(POINT_ID).build();
+	private final static List<RouteDTO> LIST_ROUTE_DTO = singletonList(ROUTE_DTO);
+	private final static List<PointDTO> LIST_POINT_DTO = singletonList(POINT_DTO);
 	
 	@Mock
 	private TrackerMgr trackerMgr;
@@ -106,13 +105,13 @@ public class TrackV1CtrlTest {
 
 	@Test
 	public void existingLastPoint_ShouldNotCreateNewRoute_ShouldNotUpdateLastPoint_ShouldCreateNewPoint() {
-		when(accessControl.getUserFromSecurityContext()).thenReturn(of(userDTO));
-		when(routeMgr.getCurrentRoute(eq(USER_ID), any())).thenReturn(of(routeDTO));
-		when(pointMgr.getLastPoint(ROUTE_ID)).thenReturn(of(lastFarawayPointDTO));
+		when(accessControl.getUserIdFromSecurityContext()).thenReturn(USER_ID);
+		when(routeMgr.getCurrentRoute(eq(USER_ID), any())).thenReturn(of(ROUTE_DTO));
+		when(pointMgr.getLastPoint(ROUTE_ID)).thenReturn(of(LAST_FARAWAY_POINT_DTO));
 		
 		trackV1Ctrl.addPointV1(GGA_LATITUDE, GGA_LONGITUDE, ACCURACY, ALTITUDE);
 		
-		verify(accessControl).getUserFromSecurityContext();
+		verify(accessControl).getUserIdFromSecurityContext();
 		verify(routeMgr, never()).createRoute(anyInt());
 		verify(pointMgr, never()).updatePoint(anyLong(), any());
 		verify(trackerMgr).addPointToRoute(any(), any());
@@ -120,14 +119,14 @@ public class TrackV1CtrlTest {
 	
 	@Test
 	public void existingLastPoint_ShouldNotCreateNewRoute_ShouldUpdateLastPoint_ShouldNotCreateNewPoint() {
-		when(accessControl.getUserFromSecurityContext()).thenReturn(of(userDTO));
-		when(routeMgr.getCurrentRoute(eq(USER_ID), any())).thenReturn(of(routeDTO));
-		when(pointMgr.getLastPoint(ROUTE_ID)).thenReturn(of(lastClosePointDTO));
-		when(pointMgr.updatePoint(anyLong(), any())).thenReturn(lastClosePointDTO);
+		when(accessControl.getUserIdFromSecurityContext()).thenReturn(USER_ID);
+		when(routeMgr.getCurrentRoute(eq(USER_ID), any())).thenReturn(of(ROUTE_DTO));
+		when(pointMgr.getLastPoint(ROUTE_ID)).thenReturn(of(LAST_CLOSE_POINT_DTO));
+		when(pointMgr.updatePoint(anyLong(), any())).thenReturn(LAST_CLOSE_POINT_DTO);
 		
 		trackV1Ctrl.addPointV1(GGA_LATITUDE, GGA_LONGITUDE, ACCURACY, ALTITUDE);
 
-		verify(accessControl).getUserFromSecurityContext();
+		verify(accessControl).getUserIdFromSecurityContext();
 		verify(routeMgr, never()).createRoute(anyInt());
 		verify(pointMgr).updatePoint(anyLong(), any());
 		verify(trackerMgr, never()).addPointToRoute(any(), any());
@@ -135,13 +134,13 @@ public class TrackV1CtrlTest {
 	
 	@Test
 	public void nonExistingLastPoint_ShouldNotCreateNewRoute_ShouldNotUpdateLastPoint_ShouldCreateNewPoint() {
-		when(accessControl.getUserFromSecurityContext()).thenReturn(of(userDTO));
-		when(routeMgr.getCurrentRoute(eq(USER_ID), any())).thenReturn(of(routeDTO));
+		when(accessControl.getUserIdFromSecurityContext()).thenReturn(USER_ID);
+		when(routeMgr.getCurrentRoute(eq(USER_ID), any())).thenReturn(of(ROUTE_DTO));
 		when(pointMgr.getLastPoint(ROUTE_ID)).thenReturn(empty());
 		
 		trackV1Ctrl.addPointV1(GGA_LATITUDE, GGA_LONGITUDE, ACCURACY, ALTITUDE);
 
-		verify(accessControl).getUserFromSecurityContext();
+		verify(accessControl).getUserIdFromSecurityContext();
 		verify(routeMgr, never()).createRoute(anyInt());
 		verify(pointMgr, never()).updatePoint(anyLong(), any());
 		verify(trackerMgr).addPointToRoute(any(), any());
@@ -149,51 +148,28 @@ public class TrackV1CtrlTest {
 	
 	@Test
 	public void shouldCreateNewRoute_ShouldNotUpdateLastPoint_ShouldCreateNewPoint() {
-		when(accessControl.getUserFromSecurityContext()).thenReturn(of(userDTO));
+		when(accessControl.getUserIdFromSecurityContext()).thenReturn(USER_ID);
 		when(routeMgr.getCurrentRoute(anyInt(), any())).thenReturn(empty());
-		when(routeMgr.createRoute(anyInt())).thenReturn(routeDTO);
+		when(routeMgr.createRoute(anyInt())).thenReturn(ROUTE_DTO);
 		when(pointMgr.getLastPoint(ROUTE_ID)).thenReturn(empty());
 		
 		trackV1Ctrl.addPointV1(GGA_LATITUDE, GGA_LONGITUDE, ACCURACY, ALTITUDE);
 		
-		verify(accessControl).getUserFromSecurityContext();
+		verify(accessControl).getUserIdFromSecurityContext();
 		verify(routeMgr).createRoute(anyInt());
 		verify(pointMgr, never()).updatePoint(anyLong(), any());
 		verify(trackerMgr).addPointToRoute(any(), any());
 	}
 	
-	@Test(expected = UserServicesException.class)
-	public void addPointShouldThrowUserServicesException() {
-		when(accessControl.getUserFromSecurityContext()).thenReturn(empty());
-
-		trackV1Ctrl.addPointV1(GGA_LATITUDE, GGA_LONGITUDE, ACCURACY, ALTITUDE);
-	
-		verify(accessControl).getUserFromSecurityContext();
-		verify(routeMgr, never()).createRoute(anyInt());
-		verify(pointMgr, never()).updatePoint(anyLong(), any());
-		verify(trackerMgr, never()).addPointToRoute(any(), any());
-	}
-	
 	@Test(expected = ParserTrackerException.class)
 	public void addPointShouldThrowParserTrackerException() {
-		when(accessControl.getUserFromSecurityContext()).thenReturn(of(userDTO));
-		when(routeMgr.getCurrentRoute(eq(USER_ID), any())).thenReturn(of(routeDTO));
+		when(accessControl.getUserIdFromSecurityContext()).thenReturn(USER_ID);
+		when(routeMgr.getCurrentRoute(eq(USER_ID), any())).thenReturn(of(ROUTE_DTO));
 
 		trackV1Ctrl.addPointV1(GGA_LATITUDE_WRONG_FORMAT, GGA_LONGITUDE, ACCURACY, ALTITUDE);
-	
-		verify(accessControl).getUserFromSecurityContext();
-		verify(routeMgr, never()).createRoute(anyInt());
-		verify(pointMgr, never()).updatePoint(anyLong(), any());
-		verify(trackerMgr, never()).addPointToRoute(any(), any());
 	}
 
-	private UserDTO forgeUserDTO() {
-		UserDTO userDTO = new UserDTO();
-		userDTO.setUserId(USER_ID);
-		return userDTO;
-	}
-	
-	private PointDTO forgeLastFarawayPointDTO() {
+	private static PointDTO forgeLastFarawayPointDTO() {
 		return PointDTO.builder()
 				.pointId(LAST_POINT_ID)
 				.latitude(LAST_LATITUDE_FARAWAY)
@@ -201,7 +177,7 @@ public class TrackV1CtrlTest {
 				.build();
 	}
 	
-	private PointDTO forgeLastClosePointDTO() {
+	private static PointDTO forgeLastClosePointDTO() {
 		return PointDTO.builder()
 				.pointId(LAST_POINT_ID)
 				.latitude(LAST_CLOSE_LATITUDE)
@@ -220,47 +196,31 @@ public class TrackV1CtrlTest {
 	
 	@Test
 	public void shouldReturnListOfRoutes() {
-		when(accessControl.getUserFromSecurityContext()).thenReturn(of(userDTO));
+		when(accessControl.getUserIdFromSecurityContext()).thenReturn(USER_ID);
 		PageRequest pageRequest = getPageRequest(PAGE, NUM_REGS_PER_PAGE, ORDER_DESC);
-		when(routeMgr.getRouteByAppUserAndFromStartDate(USER_ID, FROM.toInstant(), TO.toInstant(),pageRequest)).thenReturn(listRouteDTO);
+		when(routeMgr.getRouteByAppUserAndFromStartDate(USER_ID, FROM.toInstant(), TO.toInstant(),pageRequest)).thenReturn(LIST_ROUTE_DTO);
 		
 		trackV1Ctrl.getListOfRoutesV1(FROM, TO, ORDER_DESC, PAGE, NUM_REGS_PER_PAGE);
 	
-		verify(accessControl).getUserFromSecurityContext();
+		verify(accessControl).getUserIdFromSecurityContext();
 		verify(routeMgr).getRouteByAppUserAndFromStartDate(USER_ID, FROM.toInstant(), TO.toInstant(), pageRequest);
-	}
-	
-	@Test(expected = UserServicesException.class)
-	public void listOfRoutesShouldThrowUserServicesException() {
-		when(accessControl.getUserFromSecurityContext()).thenReturn(empty());
-
-		trackV1Ctrl.getListOfRoutesV1(INVALID_FROM, TO, ORDER_DESC, PAGE, NUM_REGS_PER_PAGE);
-	
-		verify(accessControl, never()).getUserFromSecurityContext();
-		verify(routeMgr, never()).getRouteByAppUserAndFromStartDate(any(), any(), any(), any());
 	}
 	
 	@Test(expected = ParserTrackerException.class)
 	public void listOfRoutesShouldThrowParserTrackerException() {
-		when(accessControl.getUserFromSecurityContext()).thenReturn(of(userDTO));
+		when(accessControl.getUserIdFromSecurityContext()).thenReturn(USER_ID);
 		doThrow(new ParserTrackerException(1, "", new Exception())).when(trackValidator).validateGetTracks(INVALID_FROM.toInstant(), TO.toInstant(), ORDER_DESC, PAGE, NUM_REGS_PER_PAGE);
 		
 		trackV1Ctrl.getListOfRoutesV1(INVALID_FROM, TO, ORDER_DESC, PAGE, NUM_REGS_PER_PAGE);
-	
-		verify(accessControl).getUserFromSecurityContext();
-		verify(routeMgr, never()).getRouteByAppUserAndFromStartDate(any(), any(), any(), any());
 	}
 	
 	@Test(expected = FelineNoContentException.class)
 	public void listOfRoutesShouldThrowFelineNoContentException() {
-		when(accessControl.getUserFromSecurityContext()).thenReturn(of(userDTO));
+		when(accessControl.getUserIdFromSecurityContext()).thenReturn(USER_ID);
 		PageRequest pageRequest = getPageRequest(PAGE, NUM_REGS_PER_PAGE, ORDER_DESC);
 		doThrow(FelineNoContentException.Exceptions.NO_CONTENT.getException()).when(routeMgr).getRouteByAppUserAndFromStartDate(USER_ID, FROM.toInstant(), TO.toInstant(), pageRequest);
 		
 		trackV1Ctrl.getListOfRoutesV1(FROM, TO, ORDER_DESC, PAGE, NUM_REGS_PER_PAGE);
-	
-		verify(accessControl).getUserFromSecurityContext();
-		verify(routeMgr).getRouteByAppUserAndFromStartDate(any(), any(), any(), any());
 	}
 	
 	private PageRequest getPageRequest(int page, int numRegistersPerPage, String orderAscDesc) {
@@ -279,34 +239,23 @@ public class TrackV1CtrlTest {
 	
 	@Test
 	public void shouldReturnListOfPoints() {
-		when(accessControl.getUserFromSecurityContext()).thenReturn(of(userDTO));
-		when(pointMgr.getPointsByTraRouteIdAndAppUserId(ROUTE_ID, USER_ID)).thenReturn(listPointDTO);
+		when(accessControl.getUserIdFromSecurityContext()).thenReturn(USER_ID);
+		when(pointMgr.getPointsByTraRouteIdAndAppUserId(ROUTE_ID, USER_ID)).thenReturn(LIST_POINT_DTO);
 		
-		trackV1Ctrl.getListOfPointsByRouteV1(ROUTE_ID);
+		List<PointDTO> points = trackV1Ctrl.getListOfPointsByRouteV1(ROUTE_ID);
 		
-		verify(accessControl).getUserFromSecurityContext();
+		assertTrue(points.size() == 1);
+		assertEquals(Long.valueOf(POINT_ID), points.get(0).getPointId()); 
+		verify(accessControl).getUserIdFromSecurityContext();
 		verify(pointMgr).getPointsByTraRouteIdAndAppUserId(ROUTE_ID, USER_ID);
 	}
 	
 	@Test(expected = FelineNoContentException.class)
 	public void shouldThrowNoContentException() {
-		when(accessControl.getUserFromSecurityContext()).thenReturn(of(userDTO));
+		when(accessControl.getUserIdFromSecurityContext()).thenReturn(USER_ID);
 		doThrow(FelineNoContentException.Exceptions.NO_CONTENT.getException()).when(pointMgr).getPointsByTraRouteIdAndAppUserId(ROUTE_ID, USER_ID);
 		
 		trackV1Ctrl.getListOfPointsByRouteV1(ROUTE_ID);
-	
-		verify(accessControl).getUserFromSecurityContext();
-		verify(pointMgr).getPointsByTraRouteIdAndAppUserId(ROUTE_ID, USER_ID);
-	}
-	
-	@Test(expected = UserServicesException.class)
-	public void shouldThrowUserServicesException() {
-		when(accessControl.getUserFromSecurityContext()).thenReturn(empty());
-
-		trackV1Ctrl.getListOfPointsByRouteV1(ROUTE_ID);
-	
-		verify(accessControl).getUserFromSecurityContext();
-		verify(pointMgr, never()).getPointsByTraRouteIdAndAppUserId(ROUTE_ID, USER_ID);
 	}
 	
 	/*
@@ -321,33 +270,20 @@ public class TrackV1CtrlTest {
 
 	@Test
 	public void shouldReturnCentralPoint() {
-		when(accessControl.getUserFromSecurityContext()).thenReturn(of(userDTO));
-		when(pointMgr.getPointsByTraRouteIdAndAppUserId(ROUTE_ID, USER_ID)).thenReturn(listPointDTO);
+		when(accessControl.getUserIdFromSecurityContext()).thenReturn(USER_ID);
+		when(pointMgr.getPointsByTraRouteIdAndAppUserId(ROUTE_ID, USER_ID)).thenReturn(LIST_POINT_DTO);
 		
 		trackV1Ctrl.getCentralPointV1(ROUTE_ID);
 		
-		verify(accessControl).getUserFromSecurityContext();
+		verify(accessControl).getUserIdFromSecurityContext();
 		verify(pointMgr).getPointsByTraRouteIdAndAppUserId(ROUTE_ID, USER_ID);
-	}
-	
-	@Test(expected = UserServicesException.class)
-	public void getCentralPointShouldThrowUserServicesException() {
-		when(accessControl.getUserFromSecurityContext()).thenReturn(empty());
-
-		trackV1Ctrl.getCentralPointV1(ROUTE_ID);
-	
-		verify(accessControl).getUserFromSecurityContext();
-		verify(pointMgr, never()).getPointsByTraRouteIdAndAppUserId(ROUTE_ID, USER_ID);
 	}
 	
 	@Test(expected = FelineNoContentException.class)
 	public void getCentralPointShouldThrowFelineNoContentException() {
-		when(accessControl.getUserFromSecurityContext()).thenReturn(of(userDTO));
+		when(accessControl.getUserIdFromSecurityContext()).thenReturn(USER_ID);
 		doThrow(FelineNoContentException.Exceptions.NO_CONTENT.getException()).when(pointMgr).getPointsByTraRouteIdAndAppUserId(ROUTE_ID, USER_ID);
 		
 		trackV1Ctrl.getCentralPointV1(ROUTE_ID);
-		
-		verify(accessControl).getUserFromSecurityContext();
-		verify(pointMgr).getPointsByTraRouteIdAndAppUserId(ROUTE_ID, USER_ID);
 	}
 }

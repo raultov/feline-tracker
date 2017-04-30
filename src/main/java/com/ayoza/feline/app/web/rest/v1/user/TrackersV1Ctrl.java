@@ -1,37 +1,36 @@
 package com.ayoza.feline.app.web.rest.v1.user;
 
+import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 import static org.springframework.web.bind.annotation.RequestMethod.GET;
 
-import java.util.Optional;
+import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.ayoza.feline.app.web.rest.v1.access.AccessControl;
 
-import ayoza.com.feline.api.app.dto.AppUserDTO;
-import ayoza.com.feline.api.exceptions.UserServicesException;
-import ayoza.com.feline.api.managers.AppUserMgr;
+import ayoza.com.feline.api.entities.tracker.dto.TraUserDTO;
+import ayoza.com.feline.api.managers.TraUserMgr;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.experimental.FieldDefaults;
 
 @RestController
-@RequestMapping(value = "/v1/users")
+@RequestMapping(value = "/v1/trackers")
 @AllArgsConstructor(onConstructor=@__({@Autowired}))
 @FieldDefaults(level=AccessLevel.PRIVATE)
-public class UserV1Ctrl {
+public class TrackersV1Ctrl {
 	
-	private AppUserMgr appUserMgr;
 	private AccessControl accessControl;
-	
-	@RequestMapping(value = "", method = GET, produces = MediaType.APPLICATION_JSON_VALUE, headers="Accept=*/*")
+	private TraUserMgr traUserMgr;
+
+	@RequestMapping(value = "", method = GET, produces = APPLICATION_JSON_VALUE, headers="Accept=*/*")
     @ResponseBody
-    public AppUserDTO getAppUserV1() {
-		Optional<AppUserDTO> appUserDTO = appUserMgr.getApiUserByUserId(accessControl.getUserIdFromSecurityContext());
-		return appUserDTO.orElseThrow(() -> UserServicesException.Exceptions.USER_NOT_FOUND.getException());
+	public List<TraUserDTO> getTrackers() {
+		return traUserMgr.getTraUsersByAppUserId(accessControl.getUserIdFromSecurityContext());
 	}
+
 }
