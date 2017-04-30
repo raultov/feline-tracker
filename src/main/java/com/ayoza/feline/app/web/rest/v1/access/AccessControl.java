@@ -48,8 +48,9 @@ public class AccessControl {
 		
 		Integer userId;
 		if (authentication.getPrincipal() instanceof Identifiable) {
-			Identifiable<Integer> comUser = (Identifiable<Integer>) authentication.getPrincipal();
-    		userId = comUser.getId();
+			
+			Identifiable<Integer> user = (Identifiable<Integer>) authentication.getPrincipal();
+    		userId = user.getId();
     	} else if (authentication.getPrincipal() instanceof String) {
 			userId = userServicesMgr.getApiUserByUsername((String) authentication.getPrincipal())
 					.map(UserDTO::getUserId)

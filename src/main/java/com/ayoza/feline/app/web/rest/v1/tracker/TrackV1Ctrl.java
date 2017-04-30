@@ -1,5 +1,7 @@
 package com.ayoza.feline.app.web.rest.v1.tracker;
 
+import static java.util.Optional.ofNullable;
+
 import static com.ayoza.feline.app.web.rest.v1.tracker.TrackerUtils.convertToDecimalDegrees;
 import static com.ayoza.feline.app.web.rest.v1.tracker.TrackerUtils.getCentralApiTraPoint;
 import static java.lang.Math.abs;
@@ -102,9 +104,9 @@ public class TrackV1Ctrl {
 	
 	@RequestMapping(value = "", method = GET, produces = APPLICATION_JSON_VALUE, headers="Accept=*/*")
     @ResponseBody
-    public List<RouteDTO> getListOfRoutesV1(
-    											@RequestParam(value="startDateFrom") @DateTimeFormat(pattern = "yyyyMMddHHmmss") Calendar from,
-    											@RequestParam(value="startDateTo")  @DateTimeFormat(pattern = "yyyyMMddHHmmss") Calendar to,
+    public List<RouteDTO> getListOfRoutesV1(	@RequestParam(value="trackerId", required=false) Integer trackerId,
+    											@RequestParam(value="startDateFrom", required=false) @DateTimeFormat(pattern = "yyyyMMddHHmmss") Calendar from,
+    											@RequestParam(value="startDateTo", required=false)  @DateTimeFormat(pattern = "yyyyMMddHHmmss") Calendar to,
     											@RequestParam(value="orderAscDesc") String orderAscDesc,
     											@RequestParam(value="page") Integer page,
     											@RequestParam(value="numRegistersPerPage") Integer numRegistersPerPage
@@ -112,8 +114,8 @@ public class TrackV1Ctrl {
 		
 		int userId = accessControl.getUserIdFromSecurityContext();
 		
-		Instant startDateFrom = from.toInstant();
-		Instant startDateTo = to.toInstant();
+		Instant startDateFrom = ofNullable(from).map(Calendar::toInstant).orElse(null);
+		Instant startDateTo = ofNullable(to).map(Calendar::toInstant).orElse(null);
 		
 		trackValidator.validateGetTracks(startDateFrom, startDateTo,
 											orderAscDesc,
@@ -121,9 +123,10 @@ public class TrackV1Ctrl {
 		
 		PageRequest pageRequest = new PageRequest(page, numRegistersPerPage, Sort.Direction.valueOf(orderAscDesc), ORDER_BY_START_DATE);
 		
-		return routeMgr.getRouteByAppUserAndFromStartDate(userId, 
-															startDateFrom, startDateTo,
-																pageRequest);
+		return routeMgr.getRoutes(userId,
+									ofNullable(trackerId),
+										startDateFrom, startDateTo,
+											pageRequest);
 	}
 	
 	@RequestMapping(value = "/{trackId}/points", method = GET, produces = APPLICATION_JSON_VALUE, headers = "Accept=*/*")
