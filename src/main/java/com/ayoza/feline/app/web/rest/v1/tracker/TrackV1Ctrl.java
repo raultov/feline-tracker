@@ -28,6 +28,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.ayoza.feline.app.web.rest.v1.access.AccessControl;
 
+import ayoza.com.feline.api.audit.Auditable;
 import ayoza.com.feline.api.entities.tracker.dto.PointDTO;
 import ayoza.com.feline.api.entities.tracker.dto.RouteDTO;
 import ayoza.com.feline.api.managers.tracker.PointMgr;
@@ -104,6 +105,7 @@ public class TrackV1Ctrl {
 	
 	@RequestMapping(value = "", method = GET, produces = APPLICATION_JSON_VALUE, headers="Accept=*/*")
     @ResponseBody
+    @Auditable
     public List<RouteDTO> getListOfRoutesV1(	@RequestParam(value="trackerId", required=false) Integer trackerId,
     											@RequestParam(value="startDateFrom", required=false) @DateTimeFormat(pattern = "yyyyMMddHHmmss") Calendar from,
     											@RequestParam(value="startDateTo", required=false)  @DateTimeFormat(pattern = "yyyyMMddHHmmss") Calendar to,
