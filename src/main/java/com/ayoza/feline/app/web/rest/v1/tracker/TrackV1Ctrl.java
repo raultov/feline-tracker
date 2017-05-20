@@ -57,6 +57,7 @@ public class TrackV1Ctrl {
 	
 	TrackValidator trackValidator;
 
+	@Auditable
 	@RequestMapping(value = "", method = POST, produces = APPLICATION_JSON_VALUE, consumes = APPLICATION_FORM_URLENCODED_VALUE, headers="Accept=*/*")
     @ResponseBody
     public PointDTO addPointV1(
@@ -103,9 +104,9 @@ public class TrackV1Ctrl {
 				});
 	}
 	
+	@Auditable
 	@RequestMapping(value = "", method = GET, produces = APPLICATION_JSON_VALUE, headers="Accept=*/*")
     @ResponseBody
-    @Auditable
     public List<RouteDTO> getListOfRoutesV1(	@RequestParam(value="trackerId", required=false) Integer trackerId,
     											@RequestParam(value="startDateFrom", required=false) @DateTimeFormat(pattern = "yyyyMMddHHmmss") Calendar from,
     											@RequestParam(value="startDateTo", required=false)  @DateTimeFormat(pattern = "yyyyMMddHHmmss") Calendar to,
@@ -131,12 +132,14 @@ public class TrackV1Ctrl {
 											pageRequest);
 	}
 	
+	@Auditable
 	@RequestMapping(value = "/{trackId}/points", method = GET, produces = APPLICATION_JSON_VALUE, headers = "Accept=*/*")
 	@ResponseBody
 	public List<PointDTO> getListOfPointsByRouteV1(@PathVariable(value = "trackId") Integer trackId) {
 		return pointMgr.getPointsByTraRouteIdAndAppUserId(trackId, accessControl.getUserIdFromSecurityContext());
 	}
 	
+	@Auditable
 	@RequestMapping(value = "/{trackId}/center", method = GET, produces = APPLICATION_JSON_VALUE, headers="Accept=*/*")
     @ResponseBody
     public PointDTO getCentralPointV1(

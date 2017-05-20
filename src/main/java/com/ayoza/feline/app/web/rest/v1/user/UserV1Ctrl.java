@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.ayoza.feline.app.web.rest.v1.access.AccessControl;
 
 import ayoza.com.feline.api.app.dto.AppUserDTO;
+import ayoza.com.feline.api.audit.Auditable;
 import ayoza.com.feline.api.exceptions.UserServicesException;
 import ayoza.com.feline.api.managers.AppUserMgr;
 import lombok.AccessLevel;
@@ -28,6 +29,7 @@ public class UserV1Ctrl {
 	private AppUserMgr appUserMgr;
 	private AccessControl accessControl;
 	
+	@Auditable
 	@RequestMapping(value = "", method = GET, produces = MediaType.APPLICATION_JSON_VALUE, headers="Accept=*/*")
     @ResponseBody
     public AppUserDTO getAppUserV1() {

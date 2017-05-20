@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.ayoza.feline.app.web.rest.v1.access.AccessControl;
 
+import ayoza.com.feline.api.audit.Auditable;
 import ayoza.com.feline.api.entities.tracker.dto.TraUserDTO;
 import ayoza.com.feline.api.managers.TraUserMgr;
 import lombok.AccessLevel;
@@ -27,6 +28,7 @@ public class TrackersV1Ctrl {
 	private AccessControl accessControl;
 	private TraUserMgr traUserMgr;
 
+	@Auditable
 	@RequestMapping(value = "", method = GET, produces = APPLICATION_JSON_VALUE, headers="Accept=*/*")
     @ResponseBody
 	public List<TraUserDTO> getTrackers() {
