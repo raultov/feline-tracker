@@ -42,7 +42,8 @@ public class OAuth2ServerConfig {
 											   "/oauth/token/revoke",
 											   "/v1/tracks/**",
 											   "/v1/users/**",
-											   "/v1/trackers/**"
+											   "/v1/trackers/**",
+											   "/cache/**"
 											   )
 				.and()
 			.authorizeRequests()
@@ -56,6 +57,8 @@ public class OAuth2ServerConfig {
                 .antMatchers(HttpMethod.GET, "/v1/users").access("#oauth2.hasScope('general') and hasRole('ROLE_APP_USER')")
                 
                 .antMatchers(HttpMethod.GET, "/v1/trackers").access("#oauth2.hasScope('general') and hasRole('ROLE_APP_USER')")
+                
+                .antMatchers(HttpMethod.DELETE, "/cache/**").access("#oauth2.hasScope('general') and hasRole('ROLE_APP_ADMIN')")
                 ;                
 
             // @formatter:off

@@ -8,7 +8,6 @@ import static org.springframework.http.MediaType.APPLICATION_FORM_URLENCODED_VAL
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 import static org.springframework.web.bind.annotation.RequestMethod.GET;
 import static org.springframework.web.bind.annotation.RequestMethod.POST;
-import static com.ayoza.feline.app.web.rest.v1.cache.CacheV1Ctrl.POINTS_CACHE;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
@@ -17,8 +16,6 @@ import java.util.List;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.cache.annotation.CacheEvict;
-import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -59,7 +56,6 @@ public class TrackV1Ctrl {
 	
 	TrackValidator trackValidator;
 
-	@CacheEvict(value=POINTS_CACHE, key="result.routeId")
 	@Auditable
 	@RequestMapping(value = "", method = POST, produces = APPLICATION_JSON_VALUE, consumes = APPLICATION_FORM_URLENCODED_VALUE, headers="Accept=*/*")
     @ResponseBody
@@ -136,7 +132,6 @@ public class TrackV1Ctrl {
 	}
 	
 	@Auditable
-	@Cacheable(value=POINTS_CACHE, key="#p0")
 	@RequestMapping(value = "/{trackId}/points", method = GET, produces = APPLICATION_JSON_VALUE, headers = "Accept=*/*")
 	@ResponseBody
 	public List<PointDTO> getListOfPointsByRouteV1(@PathVariable(value = "trackId") Integer trackId) {
@@ -144,7 +139,6 @@ public class TrackV1Ctrl {
 	}
 	
 	@Auditable
-	@Cacheable(value=POINTS_CACHE, key="#p0")
 	@RequestMapping(value = "/{trackId}/center", method = GET, produces = APPLICATION_JSON_VALUE, headers="Accept=*/*")
     @ResponseBody
     public PointDTO getCentralPointV1(@PathVariable(value="trackId") Integer trackId) {
