@@ -31,8 +31,14 @@ public class TrackersV1Ctrl {
 	@Auditable
 	@RequestMapping(value = "", method = GET, produces = APPLICATION_JSON_VALUE, headers="Accept=*/*")
     @ResponseBody
-	public List<TraUserDTO> getTrackers() {
+	public List<TraUserDTO> getTrackersV1() {
 		return traUserMgr.getTraUsersByAppUserId(accessControl.getUserIdFromSecurityContext());
 	}
 
+	@Auditable
+	@RequestMapping(value = "/default", method = GET, produces = APPLICATION_JSON_VALUE, headers="Accept=*/*")
+    @ResponseBody
+	public TraUserDTO getDefaultTrackerV1() {
+		return traUserMgr.getDefaultTraUserByAppUserId(accessControl.getUserIdFromSecurityContext());
+	}
 }

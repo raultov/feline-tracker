@@ -51,7 +51,7 @@ public class TrackersV1CtrlTest {
 		when(accessControl.getUserIdFromSecurityContext()).thenReturn(APP_USER_ID);
 		when(traUserMgr.getTraUsersByAppUserId(APP_USER_ID)).thenReturn(TRA_USERS_DTO);
 		
-		List<TraUserDTO> trackers = trackersV1Ctrl.getTrackers();
+		List<TraUserDTO> trackers = trackersV1Ctrl.getTrackersV1();
 		
 		assertTrue(trackers.size() == 1);
 		assertEquals(TRA_USER_DTO, trackers.get(0)); 
@@ -64,6 +64,35 @@ public class TrackersV1CtrlTest {
 		when(accessControl.getUserIdFromSecurityContext()).thenReturn(APP_USER_ID);
 		doThrow(FelineNoContentException.Exceptions.NO_CONTENT.getException()).when(traUserMgr).getTraUsersByAppUserId(APP_USER_ID);
 	
-		trackersV1Ctrl.getTrackers();
+		trackersV1Ctrl.getTrackersV1();
+	}
+	
+	/*
+	            _   ____        __             _ _  _____               _             
+	  __ _  ___| |_|  _ \  ___ / _| __ _ _   _| | ||_   _| __ __ _  ___| | _____ _ __ 
+	 / _` |/ _ \ __| | | |/ _ \ |_ / _` | | | | | __|| || '__/ _` |/ __| |/ / _ \ '__|
+	| (_| |  __/ |_| |_| |  __/  _| (_| | |_| | | |_ | || | | (_| | (__|   <  __/ |   
+	 \__, |\___|\__|____/ \___|_|  \__,_|\__,_|_|\__||_||_|  \__,_|\___|_|\_\___|_|   
+	 |___/                                                                            
+
+	 */
+	
+	@Test
+	public void givenAppUser_whenGetDefaultTracker_thenReturnsDefaultTracker() {
+		when(accessControl.getUserIdFromSecurityContext()).thenReturn(APP_USER_ID);
+		when(traUserMgr.getDefaultTraUserByAppUserId(APP_USER_ID)).thenReturn(TRA_USER_DTO);
+		
+		TraUserDTO traUserDTO = trackersV1Ctrl.getDefaultTrackerV1();
+		
+		assertTrue(traUserDTO != null);
+		assertEquals(TRA_USER_DTO, traUserDTO); 
+	}
+	
+	@Test(expected = FelineNoContentException.class)
+	public void givenAppUserAndNonExistingDefaultTracker_whenGetDefaultTracker_thenThrowsFelineNoContentException() {
+		when(accessControl.getUserIdFromSecurityContext()).thenReturn(APP_USER_ID);
+		doThrow(FelineNoContentException.Exceptions.NO_CONTENT.getException()).when(traUserMgr).getDefaultTraUserByAppUserId(APP_USER_ID);
+	
+		trackersV1Ctrl.getDefaultTrackerV1();
 	}
 }

@@ -107,7 +107,7 @@ public class TrackV1CtrlTest {
 	@Test
 	public void existingLastPoint_ShouldNotCreateNewRoute_ShouldNotUpdateLastPoint_ShouldCreateNewPoint() {
 		when(accessControl.getUserIdFromSecurityContext()).thenReturn(USER_ID);
-		when(routeMgr.getCurrentRoute(eq(USER_ID), any())).thenReturn(of(ROUTE_DTO));
+		when(routeMgr.getLastRouteFrom(eq(USER_ID), any())).thenReturn(of(ROUTE_DTO));
 		when(pointMgr.getLastPoint(ROUTE_ID)).thenReturn(of(LAST_FARAWAY_POINT_DTO));
 		
 		trackV1Ctrl.addPointV1(GGA_LATITUDE, GGA_LONGITUDE, ACCURACY, ALTITUDE);
@@ -121,7 +121,7 @@ public class TrackV1CtrlTest {
 	@Test
 	public void existingLastPoint_ShouldNotCreateNewRoute_ShouldUpdateLastPoint_ShouldNotCreateNewPoint() {
 		when(accessControl.getUserIdFromSecurityContext()).thenReturn(USER_ID);
-		when(routeMgr.getCurrentRoute(eq(USER_ID), any())).thenReturn(of(ROUTE_DTO));
+		when(routeMgr.getLastRouteFrom(eq(USER_ID), any())).thenReturn(of(ROUTE_DTO));
 		when(pointMgr.getLastPoint(ROUTE_ID)).thenReturn(of(LAST_CLOSE_POINT_DTO));
 		when(pointMgr.updatePoint(anyLong(), any())).thenReturn(LAST_CLOSE_POINT_DTO);
 		
@@ -136,7 +136,7 @@ public class TrackV1CtrlTest {
 	@Test
 	public void nonExistingLastPoint_ShouldNotCreateNewRoute_ShouldNotUpdateLastPoint_ShouldCreateNewPoint() {
 		when(accessControl.getUserIdFromSecurityContext()).thenReturn(USER_ID);
-		when(routeMgr.getCurrentRoute(eq(USER_ID), any())).thenReturn(of(ROUTE_DTO));
+		when(routeMgr.getLastRouteFrom(eq(USER_ID), any())).thenReturn(of(ROUTE_DTO));
 		when(pointMgr.getLastPoint(ROUTE_ID)).thenReturn(empty());
 		
 		trackV1Ctrl.addPointV1(GGA_LATITUDE, GGA_LONGITUDE, ACCURACY, ALTITUDE);
@@ -150,7 +150,7 @@ public class TrackV1CtrlTest {
 	@Test
 	public void shouldCreateNewRoute_ShouldNotUpdateLastPoint_ShouldCreateNewPoint() {
 		when(accessControl.getUserIdFromSecurityContext()).thenReturn(USER_ID);
-		when(routeMgr.getCurrentRoute(anyInt(), any())).thenReturn(empty());
+		when(routeMgr.getLastRouteFrom(anyInt(), any())).thenReturn(empty());
 		when(routeMgr.createRoute(anyInt())).thenReturn(ROUTE_DTO);
 		when(pointMgr.getLastPoint(ROUTE_ID)).thenReturn(empty());
 		
@@ -165,7 +165,7 @@ public class TrackV1CtrlTest {
 	@Test(expected = ParserTrackerException.class)
 	public void addPointShouldThrowParserTrackerException() {
 		when(accessControl.getUserIdFromSecurityContext()).thenReturn(USER_ID);
-		when(routeMgr.getCurrentRoute(eq(USER_ID), any())).thenReturn(of(ROUTE_DTO));
+		when(routeMgr.getLastRouteFrom(eq(USER_ID), any())).thenReturn(of(ROUTE_DTO));
 
 		trackV1Ctrl.addPointV1(GGA_LATITUDE_WRONG_FORMAT, GGA_LONGITUDE, ACCURACY, ALTITUDE);
 	}
@@ -315,5 +315,53 @@ public class TrackV1CtrlTest {
 		doThrow(FelineNoContentException.Exceptions.NO_CONTENT.getException()).when(pointMgr).getPointsByTraRouteIdAndAppUserId(ROUTE_ID, USER_ID);
 		
 		trackV1Ctrl.getCentralPointV1(ROUTE_ID);
+	}
+	
+	/*
+				            _   _              _   ____             _       
+				  __ _  ___| |_| |    __ _ ___| |_|  _ \ ___  _   _| |_ ___ 
+				 / _` |/ _ \ __| |   / _` / __| __| |_) / _ \| | | | __/ _ \
+				| (_| |  __/ |_| |__| (_| \__ \ |_|  _ < (_) | |_| | ||  __/
+				 \__, |\___|\__|_____\__,_|___/\__|_| \_\___/ \__,_|\__\___|
+				 |___/                                                      
+
+	 */
+	
+	@Test
+	public void givenAppUser_whenGetLastRoute_thenReturnsLastRoute() {
+		when(accessControl.getUserIdFromSecurityContext()).thenReturn(USER_ID);
+		when(routeMgr.getLastRoute(USER_ID, empty())).thenReturn(of(ROUTE_DTO));
+		
+		RouteDTO routeDTO = trackV1Ctrl.getLastRouteV1(null);
+		
+		assertTrue(routeDTO != null);
+		assertEquals(ROUTE_DTO, routeDTO);
+	}
+	
+	@Test(expected = FelineNoContentException.class)
+	public void givenNoRouteForAppUser_whenGetLastRoute_thenThrowsException() {
+		when(accessControl.getUserIdFromSecurityContext()).thenReturn(USER_ID);
+		when(routeMgr.getLastRoute(USER_ID, empty())).thenReturn(empty());
+		
+		trackV1Ctrl.getLastRouteV1(null);
+	}
+	
+	@Test
+	public void givenAppUserAndTraUser_whenGetLastRoute_thenReturnsLastRoute() {
+		when(accessControl.getUserIdFromSecurityContext()).thenReturn(USER_ID);
+		when(routeMgr.getLastRoute(USER_ID, of(TRACKER_ID))).thenReturn(of(ROUTE_DTO));
+		
+		RouteDTO routeDTO = trackV1Ctrl.getLastRouteV1(TRACKER_ID);
+		
+		assertTrue(routeDTO != null);
+		assertEquals(ROUTE_DTO, routeDTO);
+	}
+	
+	@Test(expected = FelineNoContentException.class)
+	public void givenNoRouteForAppUserAndTraUser_whenGetLastRoute_thenThrowsException() {
+		when(accessControl.getUserIdFromSecurityContext()).thenReturn(USER_ID);
+		when(routeMgr.getLastRoute(USER_ID, of(TRACKER_ID))).thenReturn(empty());
+		
+		trackV1Ctrl.getLastRouteV1(TRACKER_ID);
 	}
 }

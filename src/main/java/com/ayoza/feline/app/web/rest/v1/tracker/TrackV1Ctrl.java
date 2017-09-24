@@ -30,6 +30,7 @@ import com.ayoza.feline.app.web.rest.v1.access.AccessControl;
 import ayoza.com.feline.api.audit.Auditable;
 import ayoza.com.feline.api.entities.tracker.dto.PointDTO;
 import ayoza.com.feline.api.entities.tracker.dto.RouteDTO;
+import ayoza.com.feline.api.exceptions.FelineNoContentException;
 import ayoza.com.feline.api.managers.tracker.PointMgr;
 import ayoza.com.feline.api.managers.tracker.RouteMgr;
 import ayoza.com.feline.api.managers.tracker.TrackerMgr;
@@ -69,7 +70,7 @@ public class TrackV1Ctrl {
 		Instant from = Instant.now().minus(2, ChronoUnit.MINUTES);
 		
 		int userId = accessControl.getUserIdFromSecurityContext();
-		RouteDTO routeDTO = routeMgr.getCurrentRoute(userId, from)
+		RouteDTO routeDTO = routeMgr.getLastRouteFrom(userId, from)
 							.orElseGet((() -> routeMgr.createRoute(userId)));
 		
 		Double latitude = convertToDecimalDegrees(ggaLatitude);
@@ -129,6 +130,16 @@ public class TrackV1Ctrl {
 									ofNullable(trackerId),
 										startDateFrom, startDateTo,
 											pageRequest);
+	}
+	
+	@Auditable
+	@RequestMapping(value = "/last", method = GET, produces = APPLICATION_JSON_VALUE, headers="Accept=*/**")
+	@ResponseBody
+	public RouteDTO getLastRouteV1(@RequestParam(value="trackerId", required=false) Integer trackerId) {
+		int userId = accessControl.getUserIdFromSecurityContext();
+		
+		return routeMgr.getLastRoute(userId, ofNullable(trackerId))
+				.orElseThrow(() -> FelineNoContentException.Exceptions.NO_CONTENT.getException());
 	}
 	
 	@Auditable
