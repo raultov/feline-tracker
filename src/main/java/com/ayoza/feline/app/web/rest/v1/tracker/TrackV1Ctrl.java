@@ -133,7 +133,7 @@ public class TrackV1Ctrl {
 	}
 	
 	@Auditable
-	@RequestMapping(value = "/last", method = GET, produces = APPLICATION_JSON_VALUE, headers="Accept=*/**")
+	@RequestMapping(value = "/last", method = GET, produces = APPLICATION_JSON_VALUE, headers="Accept=*/*")
 	@ResponseBody
 	public RouteDTO getLastRouteV1(@RequestParam(value="trackerId", required=false) Integer trackerId) {
 		int userId = accessControl.getUserIdFromSecurityContext();
