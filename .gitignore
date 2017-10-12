@@ -1,3 +1,4 @@
+*.log
 *.class
 *.jar
 *.war
@@ -11,3 +12,4 @@
 /bin/
 /gradle/
 /gradle/wrapper/
+/WebContent/

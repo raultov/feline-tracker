@@ -13,7 +13,12 @@ import org.springframework.security.oauth2.config.annotation.web.configuration.R
 import org.springframework.security.oauth2.config.annotation.web.configurers.AuthorizationServerEndpointsConfigurer;
 import org.springframework.security.oauth2.config.annotation.web.configurers.ResourceServerSecurityConfigurer;
 import org.springframework.security.oauth2.provider.approval.DefaultUserApprovalHandler;
+import org.springframework.security.oauth2.provider.token.AuthorizationServerTokenServices;
 import org.springframework.security.oauth2.provider.token.TokenStore;
+
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
+import lombok.experimental.FieldDefaults;
 
 @Configuration
 public class OAuth2ServerConfig {
@@ -31,13 +36,14 @@ public class OAuth2ServerConfig {
 
         @Override
         public void configure(HttpSecurity http) throws Exception {
-        	
             // @formatter:off
 			http
 				.requestMatchers().antMatchers(
 											   "/oauth/token/revoke",
 											   "/v1/tracks/**",
-											   "/v1/users/**"
+											   "/v1/users/**",
+											   "/v1/trackers/**",
+											   "/cache/**"
 											   )
 				.and()
 			.authorizeRequests()
@@ -47,8 +53,12 @@ public class OAuth2ServerConfig {
                 .antMatchers(HttpMethod.GET, "/v1/tracks").access("#oauth2.hasScope('general') and hasRole('ROLE_APP_USER')")
                 .antMatchers(HttpMethod.GET, "/v1/tracks/*/center").access("#oauth2.hasScope('general') and hasRole('ROLE_APP_USER')")
                 .antMatchers(HttpMethod.GET, "/v1/tracks/*/points").access("#oauth2.hasScope('general') and hasRole('ROLE_APP_USER')")
-                
+              
                 .antMatchers(HttpMethod.GET, "/v1/users").access("#oauth2.hasScope('general') and hasRole('ROLE_APP_USER')")
+                
+                .antMatchers(HttpMethod.GET, "/v1/trackers").access("#oauth2.hasScope('general') and hasRole('ROLE_APP_USER')")
+                
+                .antMatchers(HttpMethod.DELETE, "/cache/**").access("#oauth2.hasScope('general') and hasRole('ROLE_APP_ADMIN')")
                 ;                
 
             // @formatter:off
@@ -57,16 +67,15 @@ public class OAuth2ServerConfig {
 
     @Configuration
     @EnableAuthorizationServer
+    @AllArgsConstructor(onConstructor=@__({@Autowired}))
+    @FieldDefaults(level=AccessLevel.PRIVATE)
     protected static class AuthorizationServerConfiguration extends AuthorizationServerConfigurerAdapter {
 
-        @Autowired
-        private AuthenticationManager authenticationManager;
+        AuthenticationManager authenticationManager;
         
-        @Autowired
-        private TokenStore tokenStore;
+        TokenStore tokenStore;
         
-        @Autowired
-        private MyDefaultTokenServices defaultTokenServices;
+        AuthorizationServerTokenServices defaultTokenServices;
 
         @Override
         public void configure(ClientDetailsServiceConfigurer clients) throws Exception {
@@ -78,7 +87,7 @@ public class OAuth2ServerConfig {
 			 			.authorizedGrantTypes("password", "client_credentials", "refresh_token")
 			 			.authorities("ROLE_CLIENT")
 			 			.scopes("general")
-                        .secret("client-with-refresh-token-secret") // FIXME Change this password before going into production environment
+                        .secret("client-with-refresh-token-secret") // FIXME Change this password before going to PROD
                         .and()
             ;
         }
@@ -89,7 +98,7 @@ public class OAuth2ServerConfig {
                     // Set an AuthenticationManager to support password grant type!
                     .authenticationManager(authenticationManager)
 
-                    // For testing purpose we don't want store the approvals, so each time the approval will be checked.
+                    // For testing purpose we don't want to store the approvals, so each time the approval will be checked.
                     .userApprovalHandler(new DefaultUserApprovalHandler())
                     
                     .tokenStore(tokenStore)

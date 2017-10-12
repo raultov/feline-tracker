@@ -11,8 +11,8 @@ import org.springframework.transaction.annotation.Transactional;
 @EnableTransactionManagement
 public class MyDefaultTokenServices extends DefaultTokenServices {
 	
-	// Declaramos como transaccionales los dos métodos de acceso a Base de Datos para evitar que
-	// el accesso concurrente pudiera duplicar registros en las tablas de tokens
+	// Declare these two methods as transactional in order to avoid duplicated registers in 
+	//  token tables
 	
 	@Transactional
 	@Override
