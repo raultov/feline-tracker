@@ -2,14 +2,18 @@ package com.ayoza.feline.app.web.rest.v1.tracker;
 
 import static com.ayoza.feline.web.rest.v1.exceptions.ParserTrackerException.WRONG_GPGGA_FORMAT;
 import static com.ayoza.feline.web.rest.v1.exceptions.ParserTrackerException.WRONG_GPGGA_FORMAT_MSG;
+import static java.util.Optional.ofNullable;
 
 import java.util.List;
+
+import org.apache.commons.collections.CollectionUtils;
 
 import com.ayoza.feline.web.rest.v1.exceptions.ParserTrackerException;
 
 import ayoza.com.feline.api.entities.tracker.dto.PointDTO;
+import ayoza.com.feline.api.exceptions.FelineNoContentException;
 
-class TrackerUtils {
+final class TrackerUtils {
 	
 	private static final double MINUTES = 60.0;
 	private static final double SIGN_N_E = 1.0;
@@ -18,9 +22,10 @@ class TrackerUtils {
 	private static final int PLACES_E_W = 3;
 
 	private TrackerUtils() {
+		throw new UnsupportedOperationException("Default constructor cannot be invoked");
 	}
 
-	public static Double convertToDecimalDegrees(String gga) throws ParserTrackerException {
+	static Double convertToDecimalDegrees(String gga) throws ParserTrackerException {
 		Double degrees, minutes, sign;
 		char cardinalPoint;
 		int places;
@@ -62,42 +67,26 @@ class TrackerUtils {
 	
 
 	static PointDTO getCentralApiTraPoint(List<PointDTO> geoCoordinates) {
-		
-		if (geoCoordinates == null || geoCoordinates.size() == 0) {
-            return null;
-        }
-		
-        if (geoCoordinates.size() == 1) {
-            return geoCoordinates.get(0);
-        }
-
-        double x = 0;
-        double y = 0;
-        double z = 0;
-
-        for (PointDTO apiTraPoint : geoCoordinates) {
-            double latitude = apiTraPoint.getLatitude() * Math.PI / 180;
-            double longitude = apiTraPoint.getLongitude() * Math.PI / 180;
-
-            x += Math.cos(latitude) * Math.cos(longitude);
-            y += Math.cos(latitude) * Math.sin(longitude);
-            z += Math.sin(latitude);
-        }
-
-        int total = geoCoordinates.size();
-
-        x = x / total;
-        y = y / total;
-        z = z / total;
-
-        double centralLongitude = Math.atan2(y, x);
-        double centralSquareRoot = Math.sqrt(x * x + y * y);
-        double centralLatitude = Math.atan2(z, centralSquareRoot);
-        
-        PointDTO result = new PointDTO();
-        result.setLatitude(centralLatitude * 180 / Math.PI);
-        result.setLongitude(centralLongitude * 180 / Math.PI);
-
-        return result;
+		return ofNullable(geoCoordinates)
+			.filter(CollectionUtils::isNotEmpty)
+			.map(list -> {
+				double minLat = Double.MAX_VALUE;
+				double minLong = Double.MAX_VALUE;
+				double maxLat = Double.MIN_VALUE;
+				double maxLong = Double.MIN_VALUE;
+				
+				for (PointDTO point : list) {
+					minLat = point.getLatitude() < minLat ? point.getLatitude() : minLat;
+					minLong = point.getLongitude() < minLong ? point.getLongitude() : minLong;
+					maxLat = point.getLatitude() > minLat ? point.getLatitude() : maxLat;
+					maxLong = point.getLongitude() > minLat ? point.getLongitude() : maxLong;
+				}
+				
+				return PointDTO.builder()
+						.latitude(minLat + ((maxLat-minLat) / 2.0))
+						.longitude(minLong + ((maxLong-minLong) / 2.0))
+						.build();
+			})
+			.orElseThrow(() -> FelineNoContentException.Exceptions.NO_CONTENT.getException());
     }	
 }
