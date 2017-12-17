@@ -6,9 +6,11 @@ import org.springframework.boot.autoconfigure.orm.jpa.HibernateJpaAutoConfigurat
 import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.boot.web.support.SpringBootServletInitializer;
 import org.springframework.context.annotation.EnableAspectJAutoProxy;
+import org.springframework.scheduling.annotation.EnableAsync;
 
 @SpringBootApplication(exclude = HibernateJpaAutoConfiguration.class)
 @EnableAspectJAutoProxy
+@EnableAsync
 public class FelineTrackerApplication extends SpringBootServletInitializer {
 
     @Override

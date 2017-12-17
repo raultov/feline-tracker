@@ -44,55 +44,55 @@ public class ExceptionHandlerAdvice {
 	
 	@ExceptionHandler(AccessDeniedException.class)
     public ResponseEntity<String> handleAccessDeniedExceptionn(AccessDeniedException e) {        
-    	logger.debug("Exception ocurred: " + e.getMessage());
+    	logger.error("Exception ocurred: " + e.getMessage());
     	return new ResponseEntity<String>(objectNode(null, e.getMessage()), headers, FORBIDDEN);
     }
 	
 	@ExceptionHandler(HttpRequestMethodNotSupportedException.class)
     public ResponseEntity<String> handleNotSupportedMethodExceptionn(HttpRequestMethodNotSupportedException e) {        
-    	logger.debug("Exception ocurred: " + e.getMessage());
+    	logger.error("Exception ocurred: " + e.getMessage());
     	return new ResponseEntity<String>(objectNode(null, e.getMessage()), headers, METHOD_NOT_ALLOWED);
     }
 
 	@ExceptionHandler(ParserTrackerException.class)
     public ResponseEntity<String> handleParserTrackerExceptionn(ParserTrackerException e) {        
-    	logger.debug("Exception ocurred: " + e.getMessage());
+    	logger.error("Exception ocurred: " + e.getMessage());
     	return new ResponseEntity<String>(objectNode(e), headers, BAD_REQUEST);
     }
       
 	@ExceptionHandler(FelineNoContentException.class)
 	public ResponseEntity<String> handleFelineNoContentException(FelineNoContentException e) {
-		logger.debug("Exception ocurred: " + e.getMessage());
+		logger.error("Exception ocurred: " + e.getMessage());
 		return new ResponseEntity<String>(objectNode(e), headers, NO_CONTENT);
 	}
 	
 	@ExceptionHandler(UnauthorizedUserException.class)
 	public ResponseEntity<String> handleUnauthorizedUserException(UnauthorizedUserException e) {
-		logger.debug("Exception ocurred: " + e.getMessage());
+		logger.error("Exception ocurred: " + e.getMessage());
 		return new ResponseEntity<String>(objectNode(UNAUTHORIZED.value(), e.getMessage()), headers, UNAUTHORIZED);
 	}
 	
 	@ExceptionHandler(UserServicesException.class)
 	public ResponseEntity<String> handleUserServicesException(UserServicesException e) {
-		logger.debug("Exception ocurred: " + e.getMessage());
+		logger.error("Exception ocurred: " + e.getMessage());
 		return new ResponseEntity<String>(objectNode(e), headers, UNAUTHORIZED);
 	}
 	
 	@ExceptionHandler(UsernameNotFoundException.class)
 	public ResponseEntity<String> handleUsernameNotFoundException(UsernameNotFoundException e) {
-		logger.debug("Exception ocurred: " + e.getMessage());
+		logger.error("Exception ocurred: " + e.getMessage());
 		return new ResponseEntity<String>(objectNode(UNAUTHORIZED.value(), e.getMessage()), headers, UNAUTHORIZED);
 	}
 	
 	@ExceptionHandler(TrackerException.class)
 	public ResponseEntity<String> handleTrackerException(TrackerException e) {
-		logger.debug("Exception ocurred: " + e.getMessage());
+		logger.error("Exception ocurred: " + e.getMessage());
 		return new ResponseEntity<String>(objectNode(e), headers, NOT_FOUND);
 	}
 	
 	@ExceptionHandler(Exception.class)
 	public ResponseEntity<String> handleGeneralException(Exception e) {
-		logger.debug("Exception ocurred: " + e.getMessage());
+		logger.error("Exception ocurred: " + e.getMessage());
 		return new ResponseEntity<String>(objectNode(INTERNAL_SERVER_ERROR.value(), e.getMessage()), headers, INTERNAL_SERVER_ERROR);
 	}
 	
