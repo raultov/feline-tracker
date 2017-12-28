@@ -21,7 +21,7 @@ import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
-public class TrackService {
+class TrackService {
 	
 	private static final double MIN_DIFF = 0.0002;
 	
