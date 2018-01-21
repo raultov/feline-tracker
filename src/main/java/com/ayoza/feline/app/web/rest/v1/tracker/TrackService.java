@@ -6,10 +6,9 @@ import static java.time.temporal.ChronoUnit.MINUTES;
 
 import java.time.Instant;
 import java.util.Optional;
-import java.util.concurrent.Future;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Async;
-import org.springframework.scheduling.annotation.AsyncResult;
 import org.springframework.stereotype.Service;
 
 import ayoza.com.feline.api.entities.tracker.dto.PointDTO;
@@ -31,9 +30,12 @@ class TrackService {
 	
 	private final TrackerMgr trackerMgr;
 	
+	@Value("${threshold.create.new.route.in.minutes}")
+	private int thresholdCreateNewRoute;
+	
 	@Async
-	public Future<PointDTO> addPoint(final PointDTO pointDTO, int userId) {
-		Instant from = Instant.now().minus(2, MINUTES);
+	public void addPoint(final PointDTO pointDTO, int userId) {
+		Instant from = Instant.now().minus(thresholdCreateNewRoute, MINUTES);
 		
 		RouteDTO routeDTO = routeMgr.getLastRouteFrom(userId, from)
 							.orElseGet((() -> routeMgr.createRoute(userId)));
@@ -45,6 +47,6 @@ class TrackService {
 				.filter(t -> abs(t.getLongitude() - pointDTO.getLongitude()) < MIN_DIFF)
 				.map(t -> pointMgr.updatePoint(t.getPointId(), pointDTO.withWhen(now())));
 
-		return new AsyncResult<PointDTO>(updatedPoint.orElseGet(() -> trackerMgr.addPointToRoute(pointDTO, routeDTO)));
+		updatedPoint.orElseGet(() -> trackerMgr.addPointToRoute(pointDTO, routeDTO));
 	}
 }
