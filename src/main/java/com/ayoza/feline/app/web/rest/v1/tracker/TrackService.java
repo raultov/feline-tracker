@@ -33,7 +33,7 @@ class TrackService {
 	@Value("${threshold.create.new.route.in.minutes}")
 	private int thresholdCreateNewRoute;
 	
-	@Async
+	@Async // To be deprecated
 	public void addPoint(final PointDTO pointDTO, int userId) {
 		Instant from = Instant.now().minus(thresholdCreateNewRoute, MINUTES);
 		
