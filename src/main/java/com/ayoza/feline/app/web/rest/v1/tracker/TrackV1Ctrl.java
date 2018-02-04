@@ -11,6 +11,7 @@ import static org.springframework.web.bind.annotation.RequestMethod.POST;
 import java.time.Instant;
 import java.util.Calendar;
 import java.util.List;
+import java.util.UUID;
 
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
@@ -108,14 +109,14 @@ public class TrackV1Ctrl {
 	@Auditable
 	@RequestMapping(value = "/{trackId}/points", method = GET, produces = APPLICATION_JSON_VALUE, headers = "Accept=*/*")
 	@ResponseBody
-	public List<PointDTO> getListOfPointsByRouteV1(@PathVariable(value = "trackId") Integer trackId) {
+	public List<PointDTO> getListOfPointsByRouteV1(@PathVariable(value = "trackId") UUID trackId) {
 		return pointMgr.getPointsByTraRouteIdAndAppUserId(trackId, accessControl.getUserIdFromSecurityContext());
 	}
 	
 	@Auditable
 	@RequestMapping(value = "/{trackId}/center", method = GET, produces = APPLICATION_JSON_VALUE, headers="Accept=*/*")
     @ResponseBody
-    public PointDTO getCentralPointV1(@PathVariable(value="trackId") Integer trackId) {
+    public PointDTO getCentralPointV1(@PathVariable(value="trackId") UUID trackId) {
 		return getCentralApiTraPoint(pointMgr.getPointsByTraRouteIdAndAppUserId(trackId, accessControl.getUserIdFromSecurityContext()));
 	}
 }

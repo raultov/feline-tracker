@@ -33,20 +33,24 @@ class TrackService {
 	@Value("${threshold.create.new.route.in.minutes}")
 	private int thresholdCreateNewRoute;
 	
-	@Async // To be deprecated
+	@Async
 	public void addPoint(final PointDTO pointDTO, int userId) {
-		Instant from = Instant.now().minus(thresholdCreateNewRoute, MINUTES);
+		Instant now = now();
+		Instant from = now.minus(thresholdCreateNewRoute, MINUTES);
 		
 		RouteDTO routeDTO = routeMgr.getLastRouteFrom(userId, from)
 							.orElseGet((() -> routeMgr.createRoute(userId)));
 		
-		Optional<PointDTO> lastPoint = pointMgr.getLastPoint(routeDTO.getRouteId());
+		Optional<PointDTO> lastPoint = pointMgr.getLastPoint(routeDTO.getTrackId());
 
 		Optional<PointDTO> updatedPoint = lastPoint
 				.filter(t -> abs(t.getLatitude() - pointDTO.getLatitude()) < MIN_DIFF)
 				.filter(t -> abs(t.getLongitude() - pointDTO.getLongitude()) < MIN_DIFF)
-				.map(t -> pointMgr.updatePoint(t.getPointId(), pointDTO.withWhen(now())));
+				.map(t -> pointMgr.updatePoint(t.getPointId(), pointDTO.withWhen(now)));
 
 		updatedPoint.orElseGet(() -> trackerMgr.addPointToRoute(pointDTO, routeDTO));
+		
+		// TODO
+		// routeMgr.updateRoute(routeDTO.getTrackId(), routeDTO.withEndDate(now));
 	}
 }

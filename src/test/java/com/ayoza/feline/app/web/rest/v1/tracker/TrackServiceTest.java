@@ -1,14 +1,15 @@
 package com.ayoza.feline.app.web.rest.v1.tracker;
 
+import static java.util.Optional.empty;
 import static java.util.Optional.of;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyInt;
-import static org.mockito.Matchers.anyLong;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static java.util.Optional.empty;
+
+import java.util.UUID;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -26,8 +27,8 @@ import ayoza.com.feline.api.managers.tracker.TrackerMgr;
 public class TrackServiceTest {
 	
 	private final static int USER_ID = 1;
-	private final static int ROUTE_ID = 1;
-	private final static long LAST_POINT_ID = 1L;
+	private final static UUID ROUTE_ID = UUID.randomUUID();
+	private final static UUID LAST_POINT_ID = UUID.randomUUID();
 
 	private final static double LAST_LATITUDE_FARAWAY = 27.0;
 	private final static double LAST_LONGITUDE_FARAWAY = -3.0;
@@ -44,7 +45,7 @@ public class TrackServiceTest {
 	private final static PointDTO LAST_FARAWAY_POINT_DTO = forgeLastFarawayPointDTO();
 	private final static PointDTO LAST_CLOSE_POINT_DTO = forgeLastClosePointDTO();
 
-	private final static RouteDTO ROUTE_DTO = RouteDTO.builder().routeId(ROUTE_ID).build();
+	private final static RouteDTO ROUTE_DTO = RouteDTO.builder().trackId(ROUTE_ID).build();
 	
 	@Mock
 	private RouteMgr routeMgr;
@@ -66,7 +67,7 @@ public class TrackServiceTest {
 		trackService.addPoint(POINT_DTO, USER_ID);
 
 		verify(routeMgr, never()).createRoute(anyInt());
-		verify(pointMgr, never()).updatePoint(anyLong(), any());
+		verify(pointMgr, never()).updatePoint(any(UUID.class), any());
 		verify(trackerMgr).addPointToRoute(any(), any());
 	}
 	
@@ -75,12 +76,12 @@ public class TrackServiceTest {
 	public void givenExistingLastPoint_whenAddPoint_thenUpdateLastPoint() {
 		when(routeMgr.getLastRouteFrom(eq(USER_ID), any())).thenReturn(of(ROUTE_DTO));
 		when(pointMgr.getLastPoint(ROUTE_ID)).thenReturn(of(LAST_CLOSE_POINT_DTO));
-		when(pointMgr.updatePoint(anyLong(), any())).thenReturn(LAST_CLOSE_POINT_DTO);
+		when(pointMgr.updatePoint(any(UUID.class), any())).thenReturn(LAST_CLOSE_POINT_DTO);
 		
 		trackService.addPoint(POINT_DTO, USER_ID);
 
 		verify(routeMgr, never()).createRoute(anyInt());
-		verify(pointMgr).updatePoint(anyLong(), any());
+		verify(pointMgr).updatePoint(any(UUID.class), any());
 		verify(trackerMgr, never()).addPointToRoute(any(), any());
 	}
 	
@@ -92,7 +93,7 @@ public class TrackServiceTest {
 		trackService.addPoint(POINT_DTO, USER_ID);
 
 		verify(routeMgr, never()).createRoute(anyInt());
-		verify(pointMgr, never()).updatePoint(anyLong(), any());
+		verify(pointMgr, never()).updatePoint(any(UUID.class), any());
 		verify(trackerMgr).addPointToRoute(POINT_DTO, ROUTE_DTO);
 	}
 	
@@ -105,11 +106,11 @@ public class TrackServiceTest {
 		trackService.addPoint(POINT_DTO, USER_ID);
 		
 		verify(routeMgr).createRoute(anyInt());
-		verify(pointMgr, never()).updatePoint(anyLong(), any());
+		verify(pointMgr, never()).updatePoint(any(UUID.class), any());
 		verify(trackerMgr).addPointToRoute(any(), any());
 	}
 
-	private static PointDTO forgePointDTO(Long pointId) {
+	private static PointDTO forgePointDTO(UUID pointId) {
 		return PointDTO.builder()
 				.pointId(pointId)
 				.latitude(LATITUDE)
