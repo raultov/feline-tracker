@@ -1,10 +1,13 @@
 package com.ayoza.feline.app.web.rest.v1.cache;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyInt;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.verify;
 import static org.springframework.http.HttpStatus.NO_CONTENT;
+
+import java.util.UUID;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -37,9 +40,9 @@ public class CacheV1CtrlTest {
 	
 	@Test
 	public void shouldDelegateToReturnNoContentWhenRemovingPointsCacheGivenATrackId() {
-		assertThat(cacheV1Ctrl.clearPointsByTrack(1).getStatusCode()).isEqualTo(NO_CONTENT);
+		assertThat(cacheV1Ctrl.clearPointsByTrack(UUID.randomUUID()).getStatusCode()).isEqualTo(NO_CONTENT);
 		
-		verify(cacheMgr).clearPointsByTrack(anyInt());
+		verify(cacheMgr).clearPointsByTrack(any(UUID.class));
 	}
 	
 	@Test

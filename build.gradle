@@ -1,6 +1,6 @@
 buildscript {
 	ext {
-		springBootVersion = '1.5.8.RELEASE'
+		springBootVersion = '1.4.4.RELEASE'
 	}
 	
 	repositories {
@@ -27,9 +27,9 @@ apply plugin: 'org.springframework.boot'
 apply plugin: 'net.ltgt.apt'
 
 ext {
-    springSecurityVersion = '4.2.3.RELEASE'
+    springSecurityVersion = '4.2.1.RELEASE'
     oauth2Version = '2.0.12.RELEASE'
-    springTxVersion = '4.3.12.RELEASE'
+    springTxVersion = '4.2.5.RELEASE'
     felineTrackerModelVersion = '1.0'
     hibernateVersion = '5.2.6.Final'
     lombokVersion = '1.16.12'

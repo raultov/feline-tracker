@@ -59,6 +59,9 @@ public class OAuth2ServerConfig {
                 .antMatchers(HttpMethod.GET, "/v1/trackers").access("#oauth2.hasScope('general') and hasRole('ROLE_APP_USER')")
                 
                 .antMatchers(HttpMethod.DELETE, "/cache/**").access("#oauth2.hasScope('general') and hasRole('ROLE_APP_ADMIN')")
+            .and()
+            	.csrf().disable()
+            	.cors().disable()
                 ;                
 
             // @formatter:off

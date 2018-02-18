@@ -9,6 +9,7 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.time.Instant;
 import java.util.UUID;
 
 import org.junit.Test;
@@ -68,7 +69,8 @@ public class TrackServiceTest {
 
 		verify(routeMgr, never()).createRoute(anyInt());
 		verify(pointMgr, never()).updatePoint(any(UUID.class), any());
-		verify(trackerMgr).addPointToRoute(any(), any());
+		verify(trackerMgr).addPointToRoute(any(), any(), any(Instant.class));
+		verify(routeMgr).updateRoute(any(UUID.class), any(RouteDTO.class));
 	}
 	
 	
@@ -82,7 +84,8 @@ public class TrackServiceTest {
 
 		verify(routeMgr, never()).createRoute(anyInt());
 		verify(pointMgr).updatePoint(any(UUID.class), any());
-		verify(trackerMgr, never()).addPointToRoute(any(), any());
+		verify(trackerMgr, never()).addPointToRoute(any(), any(), any(Instant.class));
+		verify(routeMgr).updateRoute(any(UUID.class), any(RouteDTO.class));
 	}
 	
 	@Test
@@ -94,7 +97,8 @@ public class TrackServiceTest {
 
 		verify(routeMgr, never()).createRoute(anyInt());
 		verify(pointMgr, never()).updatePoint(any(UUID.class), any());
-		verify(trackerMgr).addPointToRoute(POINT_DTO, ROUTE_DTO);
+		verify(trackerMgr).addPointToRoute(eq(POINT_DTO), eq(ROUTE_DTO), any(Instant.class));
+		verify(routeMgr).updateRoute(any(UUID.class), any(RouteDTO.class));
 	}
 	
 	@Test
@@ -107,7 +111,8 @@ public class TrackServiceTest {
 		
 		verify(routeMgr).createRoute(anyInt());
 		verify(pointMgr, never()).updatePoint(any(UUID.class), any());
-		verify(trackerMgr).addPointToRoute(any(), any());
+		verify(trackerMgr).addPointToRoute(any(), any(), any(Instant.class));
+		verify(routeMgr).updateRoute(any(UUID.class), any(RouteDTO.class));
 	}
 
 	private static PointDTO forgePointDTO(UUID pointId) {

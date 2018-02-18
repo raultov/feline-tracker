@@ -48,9 +48,8 @@ class TrackService {
 				.filter(t -> abs(t.getLongitude() - pointDTO.getLongitude()) < MIN_DIFF)
 				.map(t -> pointMgr.updatePoint(t.getPointId(), pointDTO.withWhen(now)));
 
-		updatedPoint.orElseGet(() -> trackerMgr.addPointToRoute(pointDTO, routeDTO));
+		updatedPoint.orElseGet(() -> trackerMgr.addPointToRoute(pointDTO, routeDTO, now));
 		
-		// TODO
-		// routeMgr.updateRoute(routeDTO.getTrackId(), routeDTO.withEndDate(now));
+		routeMgr.updateRoute(routeDTO.getTrackId(), routeDTO.withEndDate(now));
 	}
 }
