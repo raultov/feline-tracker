@@ -11,6 +11,7 @@ import static org.mockito.Mockito.when;
 
 import java.util.Calendar;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 import org.junit.Test;
@@ -36,6 +37,7 @@ public class TrackV1CtrlTest {
 	private final static int USER_ID = 1; 
 	private final static UUID ROUTE_ID = UUID.randomUUID();
 	private final static int TRACKER_ID = 1;
+	private final static Optional<Integer> EMPTY_SIZE = empty();
 	
 	private final static UUID POINT_ID = UUID.randomUUID();
 
@@ -204,51 +206,20 @@ public class TrackV1CtrlTest {
 	@Test
 	public void shouldReturnListOfPoints() {
 		when(accessControl.getUserIdFromSecurityContext()).thenReturn(USER_ID);
-		when(pointMgr.getPointsByTraRouteIdAndAppUserId(ROUTE_ID, USER_ID)).thenReturn(LIST_POINT_DTO);
+		when(pointMgr.getPointsByTraRouteIdAndAppUserId(ROUTE_ID, USER_ID, EMPTY_SIZE)).thenReturn(LIST_POINT_DTO);
 		
 		List<PointDTO> points = trackV1Ctrl.getListOfPointsByRouteV1(ROUTE_ID);
 		
 		assertTrue(points.size() == 1);
 		assertEquals(POINT_ID, points.get(0).getPointId()); 
-		verify(accessControl).getUserIdFromSecurityContext();
-		verify(pointMgr).getPointsByTraRouteIdAndAppUserId(ROUTE_ID, USER_ID);
 	}
 	
 	@Test(expected = FelineNoContentException.class)
 	public void shouldThrowNoContentException() {
 		when(accessControl.getUserIdFromSecurityContext()).thenReturn(USER_ID);
-		doThrow(FelineNoContentException.Exceptions.NO_CONTENT.getException()).when(pointMgr).getPointsByTraRouteIdAndAppUserId(ROUTE_ID, USER_ID);
+		doThrow(FelineNoContentException.Exceptions.NO_CONTENT.getException()).when(pointMgr).getPointsByTraRouteIdAndAppUserId(ROUTE_ID, USER_ID, EMPTY_SIZE);
 		
 		trackV1Ctrl.getListOfPointsByRouteV1(ROUTE_ID);
-	}
-	
-	/*
-				            _    ____           _             _ ____       _       _   
-				  __ _  ___| |_ / ___|___ _ __ | |_ _ __ __ _| |  _ \ ___ (_)_ __ | |_ 
-				 / _` |/ _ \ __| |   / _ \ '_ \| __| '__/ _` | | |_) / _ \| | '_ \| __|
-				| (_| |  __/ |_| |__|  __/ | | | |_| | | (_| | |  __/ (_) | | | | | |_ 
-				 \__, |\___|\__|\____\___|_| |_|\__|_|  \__,_|_|_|   \___/|_|_| |_|\__|
-				 |___/                                                                 
-
-	*/
-
-	@Test
-	public void shouldReturnCentralPoint() {
-		when(accessControl.getUserIdFromSecurityContext()).thenReturn(USER_ID);
-		when(pointMgr.getPointsByTraRouteIdAndAppUserId(ROUTE_ID, USER_ID)).thenReturn(LIST_POINT_DTO);
-		
-		trackV1Ctrl.getCentralPointV1(ROUTE_ID);
-		
-		verify(accessControl).getUserIdFromSecurityContext();
-		verify(pointMgr).getPointsByTraRouteIdAndAppUserId(ROUTE_ID, USER_ID);
-	}
-	
-	@Test(expected = FelineNoContentException.class)
-	public void getCentralPointShouldThrowFelineNoContentException() {
-		when(accessControl.getUserIdFromSecurityContext()).thenReturn(USER_ID);
-		doThrow(FelineNoContentException.Exceptions.NO_CONTENT.getException()).when(pointMgr).getPointsByTraRouteIdAndAppUserId(ROUTE_ID, USER_ID);
-		
-		trackV1Ctrl.getCentralPointV1(ROUTE_ID);
 	}
 	
 	/*

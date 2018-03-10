@@ -1,7 +1,7 @@
 package com.ayoza.feline.app.web.rest.v1.tracker;
 
 import static com.ayoza.feline.app.web.rest.v1.tracker.TrackerUtils.convertToDecimalDegrees;
-import static com.ayoza.feline.app.web.rest.v1.tracker.TrackerUtils.getCentralApiTraPoint;
+import static java.util.Optional.empty;
 import static java.util.Optional.ofNullable;
 import static org.springframework.http.MediaType.APPLICATION_FORM_URLENCODED_VALUE;
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
@@ -110,14 +110,8 @@ public class TrackV1Ctrl {
 	@RequestMapping(value = "/{trackId}/points", method = GET, produces = APPLICATION_JSON_VALUE, headers = "Accept=*/*")
 	@ResponseBody
 	public List<PointDTO> getListOfPointsByRouteV1(@PathVariable(value = "trackId") UUID trackId) {
-		return pointMgr.getPointsByTraRouteIdAndAppUserId(trackId, accessControl.getUserIdFromSecurityContext());
-	}
-	
-	@Auditable
-	@RequestMapping(value = "/{trackId}/center", method = GET, produces = APPLICATION_JSON_VALUE, headers="Accept=*/*")
-    @ResponseBody
-    public PointDTO getCentralPointV1(@PathVariable(value="trackId") UUID trackId) {
-		return getCentralApiTraPoint(pointMgr.getPointsByTraRouteIdAndAppUserId(trackId, accessControl.getUserIdFromSecurityContext()));
+		return pointMgr
+				.getPointsByTraRouteIdAndAppUserId(trackId, accessControl.getUserIdFromSecurityContext(), empty());
 	}
 }
 

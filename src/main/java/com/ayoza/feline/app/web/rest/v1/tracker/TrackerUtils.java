@@ -2,16 +2,8 @@ package com.ayoza.feline.app.web.rest.v1.tracker;
 
 import static com.ayoza.feline.web.rest.v1.exceptions.ParserTrackerException.WRONG_GPGGA_FORMAT;
 import static com.ayoza.feline.web.rest.v1.exceptions.ParserTrackerException.WRONG_GPGGA_FORMAT_MSG;
-import static java.util.Optional.ofNullable;
-
-import java.util.List;
-
-import org.apache.commons.collections.CollectionUtils;
 
 import com.ayoza.feline.web.rest.v1.exceptions.ParserTrackerException;
-
-import ayoza.com.feline.api.entities.tracker.dto.PointDTO;
-import ayoza.com.feline.api.exceptions.FelineNoContentException;
 
 final class TrackerUtils {
 	
@@ -64,29 +56,4 @@ final class TrackerUtils {
 		
 		return (degrees + minutes) * sign;
 	}
-	
-
-	static PointDTO getCentralApiTraPoint(List<PointDTO> geoCoordinates) {
-		return ofNullable(geoCoordinates)
-			.filter(CollectionUtils::isNotEmpty)
-			.map(list -> {
-				double minLat = Double.MAX_VALUE;
-				double minLong = Double.MAX_VALUE;
-				double maxLat = Double.MIN_VALUE;
-				double maxLong = Double.MIN_VALUE;
-				
-				for (PointDTO point : list) {
-					minLat = point.getLatitude() < minLat ? point.getLatitude() : minLat;
-					minLong = point.getLongitude() < minLong ? point.getLongitude() : minLong;
-					maxLat = point.getLatitude() > minLat ? point.getLatitude() : maxLat;
-					maxLong = point.getLongitude() > minLat ? point.getLongitude() : maxLong;
-				}
-				
-				return PointDTO.builder()
-						.latitude(minLat + ((maxLat-minLat) / 2.0))
-						.longitude(minLong + ((maxLong-minLong) / 2.0))
-						.build();
-			})
-			.orElseThrow(() -> FelineNoContentException.Exceptions.NO_CONTENT.getException());
-    }	
 }
