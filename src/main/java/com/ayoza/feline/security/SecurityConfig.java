@@ -13,7 +13,9 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.factory.PasswordEncoderFactories;
+import org.springframework.security.crypto.password.DelegatingPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.provider.token.AuthorizationServerTokenServices;
 import org.springframework.security.oauth2.provider.token.TokenStore;
@@ -41,15 +43,17 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     protected void configure(AuthenticationManagerBuilder auth) throws Exception {
     	DaoAuthenticationProvider daoAuthenticationProvider = new DaoAuthenticationProvider();
     	
-    	// TODO replace this with PasswordEncoder passwordEncoder = PasswordEncoderFactories.createDelegatingPasswordEncoder();
-    	// and prefix every DB password with prefix {MD5}
-    	//PasswordEncoder passwordEncoder = new MessageDigestPasswordEncoder("MD5");
-    	PasswordEncoder passwordEncoder = PasswordEncoderFactories.createDelegatingPasswordEncoder();
-    	daoAuthenticationProvider.setPasswordEncoder(passwordEncoder);
-    	
     	daoAuthenticationProvider.setUserDetailsService(userServicesMgr);
     	
     	auth.authenticationProvider(daoAuthenticationProvider);
+    }
+    
+    @Bean
+    @Primary
+    public PasswordEncoder passwordEncoder() {
+    	DelegatingPasswordEncoder passwordEncoder = (DelegatingPasswordEncoder) PasswordEncoderFactories.createDelegatingPasswordEncoder();
+    	passwordEncoder.setDefaultPasswordEncoderForMatches(new BCryptPasswordEncoder());
+    	return passwordEncoder;
     }
 
     /**
