@@ -1,14 +1,13 @@
 buildscript {
 	ext {
-		springBootVersion = '1.4.4.RELEASE'
+		springBootVersion = '2.0.0.RELEASE'
 	}
 	
 	repositories {
         mavenCentral()
         mavenLocal()
-        maven {
-            url 'http://s3.amazonaws.com/download.elasticsearch.org/lucenesnapshots/00142c9'
-        }		
+        maven { url 'http://repo.spring.io/milestone' }
+        maven { url 'http://s3.amazonaws.com/download.elasticsearch.org/lucenesnapshots/00142c9' }		
 	}
 	
 	dependencies {
@@ -21,28 +20,29 @@ plugins {
 }
 
 apply plugin: 'java'
-apply plugin: 'eclipse-wtp'
-apply plugin: 'war'
+apply plugin: 'eclipse'
 apply plugin: 'org.springframework.boot'
 apply plugin: 'net.ltgt.apt'
+apply plugin: 'io.spring.dependency-management'
 
 ext {
-    springSecurityVersion = '4.2.1.RELEASE'
-    oauth2Version = '2.0.12.RELEASE'
-    springTxVersion = '4.2.5.RELEASE'
+    springSecurityVersion = '5.0.3.RELEASE'
+    oauth2Version = '2.3.0.RELEASE'
+    springTxVersion = '5.0.4.RELEASE'
     felineTrackerModelVersion = '1.0'
-    hibernateVersion = '5.2.6.Final'
-    lombokVersion = '1.16.12'
-    jUnitsParamsversion = '0.3.6'
-    assertCoreVersion = '3.6.2'
-    jnaVersion = '4.5.0'
+    hibernateVersion = '5.2.15.Final'
+    lombokVersion = '1.16.20'
+    jUnitsParamsversion = '1.1.1'
+    assertCoreVersion = '3.9.1'
+    jnaVersion = '4.5.1'
     elasticSearchVersion = '6.1.1'
+    servletApiVersion = '4.0.0'
+    springCloudVersion = 'Finchley.M8'
 }
 
-war {
-	baseName = 'feline-tracker'
-	version = '1.0.0'
-}
+group = 'com.ayoza'
+version = '1.0.0'
+
 sourceCompatibility = 1.8
 targetCompatibility = 1.8
 
@@ -50,25 +50,24 @@ repositories {
 	jcenter()
 	mavenLocal()
 	mavenCentral()
+	maven { url 'http://repo.spring.io/milestone' }
 }
 
 configurations {
 	providedRuntime
+	compile.exclude module: 'spring-boot-starter-tomcat'
 }
 
 dependencies {
-	compile('org.springframework.boot:spring-boot-starter-jersey')
+	//compile('org.springframework.boot:spring-boot-starter-jersey')
 	compile('org.springframework.boot:spring-boot-starter-cache')	
-	//compile('org.springframework.boot:spring-boot-starter-jetty')
-	compile('org.springframework.boot:spring-boot-starter-tomcat')
-	compile('org.springframework.boot:spring-boot-starter-web')// {
-		//exclude module: 'spring-boot-starter-tomcat'
-	//}
+	compile('org.springframework.boot:spring-boot-starter-web')
+	compile('org.springframework.boot:spring-boot-starter-jetty')
+	compile('org.springframework.boot:spring-boot-starter-security')
+	compile('org.springframework.cloud:spring-cloud-starter-oauth2')
 	
-	//providedRuntime 'org.springframework.boot:spring-boot-starter-tomcat'
-	
-	compile "org.springframework.security:spring-security-core:$springSecurityVersion"
-	compile "org.springframework.security.oauth:spring-security-oauth2:$oauth2Version"
+	//compile "org.springframework.security:spring-security-core:$springSecurityVersion"
+	//compile "org.springframework.security.oauth:spring-security-oauth2:$oauth2Version"
 	compile "org.springframework:spring-tx:$springTxVersion"
 	
 	runtime "org.hibernate:hibernate-core:$hibernateVersion"
@@ -79,6 +78,8 @@ dependencies {
     runtime ("com.ayoza.feline-tracker-lib:feline-tracker-core:$felineTrackerModelVersion") {
             exclude module: 'feline-tracker-model'
     }
+    
+    providedRuntime "javax.servlet:javax.servlet-api:$servletApiVersion"
    
     runtime "com.ayoza.feline-tracker-lib:feline-tracker-model:$felineTrackerModelVersion"
 	
@@ -92,6 +93,12 @@ dependencies {
 	compile "org.assertj:assertj-core:$assertCoreVersion"
 }
 
+dependencyManagement {
+	imports {
+		mavenBom "org.springframework.cloud:spring-cloud-dependencies:${springCloudVersion}"
+	}
+}
+
 
 eclipse {
 	classpath {
@@ -101,5 +108,5 @@ eclipse {
 }
 
 task wrapper(type: Wrapper) {
-	gradleVersion = '2.9'
+	gradleVersion = '4.6'
 }

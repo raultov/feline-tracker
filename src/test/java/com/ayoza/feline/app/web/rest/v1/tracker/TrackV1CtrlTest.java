@@ -14,16 +14,16 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
+import com.ayoza.feline.app.web.rest.v1.access.AccessControl;
+import com.ayoza.feline.web.rest.v1.exceptions.ParserTrackerException;
+
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
-
-import com.ayoza.feline.app.web.rest.v1.access.AccessControl;
-import com.ayoza.feline.web.rest.v1.exceptions.ParserTrackerException;
 
 import ayoza.com.feline.api.entities.tracker.dto.PointDTO;
 import ayoza.com.feline.api.entities.tracker.dto.RouteDTO;
@@ -106,8 +106,6 @@ public class TrackV1CtrlTest {
 	
 	@Test(expected = ParserTrackerException.class)
 	public void givenWrongFormatLatitude_whenAddPoint_thenParserTrackerExceptionIsThrown() {
-		when(accessControl.getUserIdFromSecurityContext()).thenReturn(USER_ID);
-
 		trackV1Ctrl.addPointV1(GGA_LATITUDE_WRONG_FORMAT, GGA_LONGITUDE, ACCURACY, ALTITUDE);
 	}
 
@@ -190,7 +188,7 @@ public class TrackV1CtrlTest {
 	}
 	
 	private PageRequest getPageRequest(int page, int numRegistersPerPage, String orderAscDesc) {
-		return new PageRequest(page, numRegistersPerPage, Sort.Direction.valueOf(orderAscDesc), TrackV1Ctrl.ORDER_BY_START_DATE);
+		return PageRequest.of(page, numRegistersPerPage, Sort.Direction.valueOf(orderAscDesc), TrackV1Ctrl.ORDER_BY_START_DATE);
 	}
 	
 	/*
