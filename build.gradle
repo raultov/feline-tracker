@@ -4,8 +4,11 @@ buildscript {
 	}
 	
 	repositories {
-		mavenCentral()
-		mavenLocal()
+        mavenCentral()
+        mavenLocal()
+        maven {
+            url 'http://s3.amazonaws.com/download.elasticsearch.org/lucenesnapshots/00142c9'
+        }		
 	}
 	
 	dependencies {
@@ -32,11 +35,13 @@ ext {
     lombokVersion = '1.16.12'
     jUnitsParamsversion = '0.3.6'
     assertCoreVersion = '3.6.2'
+    jnaVersion = '4.5.0'
+    elasticSearchVersion = '6.1.1'
 }
 
 war {
 	baseName = 'feline-tracker'
-	version = '0.0.2-SNAPSHOT'
+	version = '1.0.0'
 }
 sourceCompatibility = 1.8
 targetCompatibility = 1.8
@@ -67,6 +72,9 @@ dependencies {
 	compile "org.springframework:spring-tx:$springTxVersion"
 	
 	runtime "org.hibernate:hibernate-core:$hibernateVersion"
+	runtime "net.java.dev.jna:jna:$jnaVersion"
+	runtime "org.elasticsearch:elasticsearch:$elasticSearchVersion"
+	runtime "org.elasticsearch.client:elasticsearch-rest-high-level-client:$elasticSearchVersion"
 	
     runtime ("com.ayoza.feline-tracker-lib:feline-tracker-core:$felineTrackerModelVersion") {
             exclude module: 'feline-tracker-model'

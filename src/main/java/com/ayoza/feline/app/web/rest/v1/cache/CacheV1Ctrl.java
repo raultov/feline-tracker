@@ -2,6 +2,8 @@ package com.ayoza.feline.app.web.rest.v1.cache;
 
 import static org.springframework.web.bind.annotation.RequestMethod.DELETE;
 
+import java.util.UUID;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -31,7 +33,7 @@ public class CacheV1Ctrl {
 
 	@Auditable
 	@RequestMapping(value = "/tracks/{trackId}", method = DELETE)
-	public ResponseEntity<Void> clearPointsByTrack(@PathVariable(value="trackId") Integer trackId) {
+	public ResponseEntity<Void> clearPointsByTrack(@PathVariable(value="trackId") UUID trackId) {
 		cacheMgr.clearPointsByTrack(trackId);
 		return ResponseEntity.noContent().build();
 	}

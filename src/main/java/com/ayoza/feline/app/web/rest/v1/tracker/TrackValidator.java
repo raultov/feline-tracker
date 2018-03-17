@@ -7,7 +7,7 @@ import org.springframework.stereotype.Service;
 import com.ayoza.feline.web.rest.v1.exceptions.ParserTrackerException;
 
 @Service
-public class TrackValidator {
+class TrackValidator {
 	
 	private static final String ASC = "ASC";
 	private static final String DESC = "DESC";
