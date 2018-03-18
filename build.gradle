@@ -26,8 +26,6 @@ apply plugin: 'net.ltgt.apt'
 apply plugin: 'io.spring.dependency-management'
 
 ext {
-    springSecurityVersion = '5.0.3.RELEASE'
-    oauth2Version = '2.3.0.RELEASE'
     springTxVersion = '5.0.4.RELEASE'
     felineTrackerModelVersion = '1.0'
     hibernateVersion = '5.2.15.Final'
@@ -64,6 +62,7 @@ dependencies {
 	compile('org.springframework.boot:spring-boot-starter-jetty')
 	compile('org.springframework.boot:spring-boot-starter-security')
 	compile('org.springframework.cloud:spring-cloud-starter-oauth2')
+	compile('org.springframework.boot:spring-boot-starter-data-jpa')
 	
 	compile "org.springframework:spring-tx:$springTxVersion"
 	
