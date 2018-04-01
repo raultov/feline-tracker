@@ -5,40 +5,36 @@ import static org.springframework.web.bind.annotation.RequestMethod.GET;
 
 import java.util.List;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import com.ayoza.feline.app.web.rest.v1.access.AccessControl;
+
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.ayoza.feline.app.web.rest.v1.access.AccessControl;
-
 import ayoza.com.feline.api.audit.Auditable;
-import ayoza.com.feline.api.entities.tracker.dto.TraUserDTO;
-import ayoza.com.feline.api.managers.TraUserMgr;
-import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
-import lombok.experimental.FieldDefaults;
+import ayoza.com.feline.api.managers.TrackerUserMgr;
+import ayoza.com.feline.api.user.dto.TrackerUserDTO;
+import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequestMapping(value = "/v1/trackers")
-@AllArgsConstructor(onConstructor=@__({@Autowired}))
-@FieldDefaults(level=AccessLevel.PRIVATE)
+@RequiredArgsConstructor
 public class TrackersV1Ctrl {
 	
-	private AccessControl accessControl;
-	private TraUserMgr traUserMgr;
+	private final AccessControl accessControl;
+	private final TrackerUserMgr trackerUserMgr;
 
 	@Auditable
 	@RequestMapping(value = "", method = GET, produces = APPLICATION_JSON_VALUE, headers="Accept=*/*")
     @ResponseBody
-	public List<TraUserDTO> getTrackersV1() {
-		return traUserMgr.getTraUsersByAppUserId(accessControl.getUserIdFromSecurityContext());
+	public List<TrackerUserDTO> getTrackersV1() {
+		return trackerUserMgr.getTrackerUsersByEmail(accessControl.getUserIdFromSecurityContext());
 	}
 
 	@Auditable
 	@RequestMapping(value = "/default", method = GET, produces = APPLICATION_JSON_VALUE, headers="Accept=*/*")
     @ResponseBody
-	public TraUserDTO getDefaultTrackerV1() {
-		return traUserMgr.getDefaultTraUserByAppUserId(accessControl.getUserIdFromSecurityContext());
+	public TrackerUserDTO getDefaultTrackerV1() {
+		return trackerUserMgr.getDefaultTrackerUserByEmail(accessControl.getUserIdFromSecurityContext());
 	}
 }

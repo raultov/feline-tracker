@@ -36,6 +36,7 @@ ext {
     elasticSearchVersion = '6.1.1'
     servletApiVersion = '4.0.0'
     springCloudVersion = 'Finchley.M8'
+    commonsLangVersion = '2.6'
 }
 
 group = 'com.ayoza'
@@ -85,8 +86,9 @@ dependencies {
     apt "org.projectlombok:lombok:$lombokVersion" 	
 	
 	testCompile('org.springframework.boot:spring-boot-starter-test') 
-	compile "pl.pragmatists:JUnitParams:$jUnitsParamsversion"
-	compile "org.assertj:assertj-core:$assertCoreVersion"
+	testCompile "commons-lang:commons-lang:$commonsLangVersion"
+	testCompile "pl.pragmatists:JUnitParams:$jUnitsParamsversion"
+	testCompile "org.assertj:assertj-core:$assertCoreVersion"
 }
 
 dependencyManagement {

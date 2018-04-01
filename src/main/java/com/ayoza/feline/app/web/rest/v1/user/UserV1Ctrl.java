@@ -12,10 +12,10 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.ayoza.feline.app.web.rest.v1.access.AccessControl;
 
-import ayoza.com.feline.api.app.dto.AppUserDTO;
 import ayoza.com.feline.api.audit.Auditable;
 import ayoza.com.feline.api.exceptions.UserServicesException;
 import ayoza.com.feline.api.managers.AppUserMgr;
+import ayoza.com.feline.api.user.dto.AppUserDTO;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -33,7 +33,7 @@ public class UserV1Ctrl {
 	@RequestMapping(value = "", method = GET, produces = MediaType.APPLICATION_JSON_VALUE, headers="Accept=*/*")
     @ResponseBody
     public AppUserDTO getAppUserV1() {
-		Optional<AppUserDTO> appUserDTO = appUserMgr.getApiUserByUserId(accessControl.getUserIdFromSecurityContext());
+		Optional<AppUserDTO> appUserDTO = appUserMgr.getApiUserByEmail(accessControl.getUserIdFromSecurityContext());
 		return appUserDTO.orElseThrow(() -> UserServicesException.Exceptions.USER_NOT_FOUND.getException());
 	}
 }

@@ -34,12 +34,12 @@ class TrackService {
 	private int thresholdCreateNewRoute;
 	
 	@Async
-	public void addPoint(final PointDTO pointDTO, int userId) {
+	public void addPoint(final PointDTO pointDTO, String simPhone) {
 		Instant now = now();
 		Instant from = now.minus(thresholdCreateNewRoute, MINUTES);
 		
-		RouteDTO routeDTO = routeMgr.getLastRouteFrom(userId, from)
-							.orElseGet((() -> routeMgr.createRoute(userId)));
+		RouteDTO routeDTO = routeMgr.getLastRouteFrom(simPhone, from)
+							.orElseGet((() -> routeMgr.createRoute(simPhone)));
 		
 		Optional<PointDTO> lastPoint = pointMgr.getLastPoint(routeDTO.getTrackId());
 

@@ -2,9 +2,10 @@ package com.ayoza.feline.app.web.rest.v1.tracker;
 
 import static java.util.Optional.empty;
 import static java.util.Optional.of;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyInt;
-import static org.mockito.Matchers.eq;
+import static org.apache.commons.lang.RandomStringUtils.randomNumeric;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -16,7 +17,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.MockitoJUnitRunner;
 
 import ayoza.com.feline.api.entities.tracker.dto.PointDTO;
 import ayoza.com.feline.api.entities.tracker.dto.RouteDTO;
@@ -27,7 +28,7 @@ import ayoza.com.feline.api.managers.tracker.TrackerMgr;
 @RunWith(MockitoJUnitRunner.class)
 public class TrackServiceTest {
 	
-	private final static int USER_ID = 1;
+	private final String simPhone = randomNumeric(10);
 	private final static UUID ROUTE_ID = UUID.randomUUID();
 	private final static UUID LAST_POINT_ID = UUID.randomUUID();
 
@@ -62,12 +63,12 @@ public class TrackServiceTest {
 	
 	@Test
 	public void givenExistingLastPoint_whenAddPoint_thenCreateNewPoint() {
-		when(routeMgr.getLastRouteFrom(eq(USER_ID), any())).thenReturn(of(ROUTE_DTO));
+		when(routeMgr.getLastRouteFrom(eq(simPhone), any())).thenReturn(of(ROUTE_DTO));
 		when(pointMgr.getLastPoint(ROUTE_ID)).thenReturn(of(LAST_FARAWAY_POINT_DTO));
 		
-		trackService.addPoint(POINT_DTO, USER_ID);
+		trackService.addPoint(POINT_DTO, simPhone);
 
-		verify(routeMgr, never()).createRoute(anyInt());
+		verify(routeMgr, never()).createRoute(anyString());
 		verify(pointMgr, never()).updatePoint(any(UUID.class), any());
 		verify(trackerMgr).addPointToRoute(any(), any(), any(Instant.class));
 		verify(routeMgr).updateRoute(any(UUID.class), any(RouteDTO.class));
@@ -76,13 +77,13 @@ public class TrackServiceTest {
 	
 	@Test
 	public void givenExistingLastPoint_whenAddPoint_thenUpdateLastPoint() {
-		when(routeMgr.getLastRouteFrom(eq(USER_ID), any())).thenReturn(of(ROUTE_DTO));
+		when(routeMgr.getLastRouteFrom(eq(simPhone), any())).thenReturn(of(ROUTE_DTO));
 		when(pointMgr.getLastPoint(ROUTE_ID)).thenReturn(of(LAST_CLOSE_POINT_DTO));
 		when(pointMgr.updatePoint(any(UUID.class), any())).thenReturn(LAST_CLOSE_POINT_DTO);
 		
-		trackService.addPoint(POINT_DTO, USER_ID);
+		trackService.addPoint(POINT_DTO, simPhone);
 
-		verify(routeMgr, never()).createRoute(anyInt());
+		verify(routeMgr, never()).createRoute(anyString());
 		verify(pointMgr).updatePoint(any(UUID.class), any());
 		verify(trackerMgr, never()).addPointToRoute(any(), any(), any(Instant.class));
 		verify(routeMgr).updateRoute(any(UUID.class), any(RouteDTO.class));
@@ -90,12 +91,12 @@ public class TrackServiceTest {
 	
 	@Test
 	public void givenNonExistingLastPoint_whenAddPoint_thenCreateNewPoint() {
-		when(routeMgr.getLastRouteFrom(eq(USER_ID), any())).thenReturn(of(ROUTE_DTO));
+		when(routeMgr.getLastRouteFrom(eq(simPhone), any())).thenReturn(of(ROUTE_DTO));
 		when(pointMgr.getLastPoint(ROUTE_ID)).thenReturn(empty());
 		
-		trackService.addPoint(POINT_DTO, USER_ID);
+		trackService.addPoint(POINT_DTO, simPhone);
 
-		verify(routeMgr, never()).createRoute(anyInt());
+		verify(routeMgr, never()).createRoute(anyString());
 		verify(pointMgr, never()).updatePoint(any(UUID.class), any());
 		verify(trackerMgr).addPointToRoute(eq(POINT_DTO), eq(ROUTE_DTO), any(Instant.class));
 		verify(routeMgr).updateRoute(any(UUID.class), any(RouteDTO.class));
@@ -103,13 +104,12 @@ public class TrackServiceTest {
 	
 	@Test
 	public void givenNoPreviousRoute_whenAddPoint_thenCreateNewRouteAndNewPoint() {
-		when(routeMgr.getLastRouteFrom(anyInt(), any())).thenReturn(empty());
-		when(routeMgr.createRoute(anyInt())).thenReturn(ROUTE_DTO);
+		when(routeMgr.getLastRouteFrom(anyString(), any())).thenReturn(empty());
+		when(routeMgr.createRoute(anyString())).thenReturn(ROUTE_DTO);
 		when(pointMgr.getLastPoint(ROUTE_ID)).thenReturn(empty());
 		
-		trackService.addPoint(POINT_DTO, USER_ID);
+		trackService.addPoint(POINT_DTO, simPhone);
 		
-		verify(routeMgr).createRoute(anyInt());
 		verify(pointMgr, never()).updatePoint(any(UUID.class), any());
 		verify(trackerMgr).addPointToRoute(any(), any(), any(Instant.class));
 		verify(routeMgr).updateRoute(any(UUID.class), any(RouteDTO.class));
