@@ -3,6 +3,9 @@ package com.ayoza.feline.security;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
+import org.springframework.data.redis.connection.RedisConnectionFactory;
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.serializer.StringRedisSerializer;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
@@ -19,6 +22,7 @@ import org.springframework.security.oauth2.provider.token.DefaultTokenServices;
 import org.springframework.security.oauth2.provider.token.TokenStore;
 import org.springframework.security.oauth2.provider.token.store.InMemoryTokenStore;
 
+import ayoza.com.feline.api.entities.tracker.dto.PointDTO;
 import ayoza.com.feline.api.managers.UserServicesMgr;
 import lombok.RequiredArgsConstructor;
 
@@ -60,18 +64,29 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     
 	@Bean
 	@Primary
-	public AuthorizationServerTokenServices defaultTokenServices() {
+	public AuthorizationServerTokenServices defaultTokenServices(TokenStore tokenStore) {
 		DefaultTokenServices tokenServices = new DefaultTokenServices();
-		tokenServices.setTokenStore(tokenStore());
+		tokenServices.setTokenStore(tokenStore);
 		tokenServices.setSupportRefreshToken(true);
 	    return tokenServices;
 	}
+	
+	  @Primary
+	  @Bean
+	  public RedisTemplate<String,PointDTO> redisTemplate(RedisConnectionFactory connectionFactory) {
+	    RedisTemplate<String, PointDTO> template = new RedisTemplate<String, PointDTO>();
+
+	    template.setKeySerializer(new StringRedisSerializer());
+	    template.setHashKeySerializer(new StringRedisSerializer());
+
+	    template.setConnectionFactory(connectionFactory);
+	    return template;
+	  }
     
 	@Bean
-	public TokenStore tokenStore() {
-		// TODO Set distributed token store, redis?
-		TokenStore tokenStore = new InMemoryTokenStore();//new JdbcTokenStore(dataSource); 
-	    return tokenStore;
+	public TokenStore tokenStore(RedisConnectionFactory redisConnectionFactory) {
+		return new InMemoryTokenStore();
+		//return new RedisTokenStore(redisConnectionFactory);
 	}
 
     /**
