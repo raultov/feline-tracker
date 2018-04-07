@@ -71,7 +71,7 @@ public class TrackV1Ctrl {
 	@Auditable
 	@RequestMapping(value = "", method = GET, produces = APPLICATION_JSON_VALUE, headers="Accept=*/*")
     @ResponseBody
-    public List<RouteDTO> getListOfRoutesV1(	@RequestParam(value="trackerId", required=false) String simPhone,
+    public List<RouteDTO> getListOfRoutesV1(	@RequestParam(value="simPhone", required=false) String simPhone,
     											@RequestParam(value="startDateFrom", required=false) @DateTimeFormat(pattern = "yyyyMMddHHmmss") Calendar from,
     											@RequestParam(value="startDateTo", required=false)  @DateTimeFormat(pattern = "yyyyMMddHHmmss") Calendar to,
     											@RequestParam(value="orderAscDesc") String orderAscDesc,
@@ -99,7 +99,7 @@ public class TrackV1Ctrl {
 	@Auditable
 	@RequestMapping(value = "/last", method = GET, produces = APPLICATION_JSON_VALUE, headers="Accept=*/*")
 	@ResponseBody
-	public RouteDTO getLastRouteV1(@RequestParam(value="trackerId", required=false) String simPhone) {
+	public RouteDTO getLastRouteV1(@RequestParam(value="simPhone", required=false) String simPhone) {
 		String email = accessControl.getUserIdFromSecurityContext();
 		
 		return routeMgr.getLastRoute(email, ofNullable(simPhone))

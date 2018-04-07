@@ -161,7 +161,7 @@ public class TrackV1CtrlTest {
 	}
 	
 	@Test
-	public void shouldReturnListOfRoutesWhenNonNullTrackerId() {
+	public void shouldReturnListOfRoutesWhenNonNullSimPhone() {
 		when(accessControl.getUserIdFromSecurityContext()).thenReturn(username);
 		PageRequest pageRequest = getPageRequest(PAGE, NUM_REGS_PER_PAGE, ORDER_DESC);
 		when(routeMgr.getRoutes(username, of(simPhone), FROM.toInstant(), TO.toInstant(),pageRequest)).thenReturn(LIST_ROUTE_DTO);
@@ -173,7 +173,7 @@ public class TrackV1CtrlTest {
 	}
 	
 	@Test(expected = ParserTrackerException.class)
-	public void shouldThrowParserTrackerExceptionWhenNonNullTrackerId() {
+	public void shouldThrowParserTrackerExceptionWhenNonNullSimPhone() {
 		when(accessControl.getUserIdFromSecurityContext()).thenReturn(username);
 		doThrow(new ParserTrackerException(1, "", new Exception())).when(trackValidator).validateGetTracks(INVALID_FROM.toInstant(), TO.toInstant(), ORDER_DESC, PAGE, NUM_REGS_PER_PAGE);
 		
@@ -181,7 +181,7 @@ public class TrackV1CtrlTest {
 	}
 	
 	@Test(expected = FelineNoContentException.class)
-	public void shouldThrowFelineNoContentExceptionWhenNonNullTrackerId() {
+	public void shouldThrowFelineNoContentExceptionWhenNonNullSimPhone() {
 		when(accessControl.getUserIdFromSecurityContext()).thenReturn(username);
 		PageRequest pageRequest = getPageRequest(PAGE, NUM_REGS_PER_PAGE, ORDER_DESC);
 		doThrow(FelineNoContentException.Exceptions.NO_CONTENT.getException()).when(routeMgr).getRoutes(username, of(simPhone), FROM.toInstant(), TO.toInstant(), pageRequest);

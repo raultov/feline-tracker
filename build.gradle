@@ -26,9 +26,7 @@ apply plugin: 'net.ltgt.apt'
 apply plugin: 'io.spring.dependency-management'
 
 ext {
-    springTxVersion = '5.0.4.RELEASE'
-    felineTrackerModelVersion = '1.0'
-    hibernateVersion = '5.2.15.Final'
+    felineTrackerCoreVersion = '1.0'
     lombokVersion = '1.16.20'
     jUnitsParamsversion = '1.1.1'
     assertCoreVersion = '3.9.1'
@@ -63,25 +61,16 @@ dependencies {
 	compile('org.springframework.boot:spring-boot-starter-jetty')
 	compile('org.springframework.boot:spring-boot-starter-security')
 	compile('org.springframework.cloud:spring-cloud-starter-oauth2')
-	compile('org.springframework.boot:spring-boot-starter-data-jpa')
 	compile('org.springframework.boot:spring-boot-starter-data-redis')
-
-	compile "org.springframework:spring-tx:$springTxVersion"
 	
-	runtime "org.hibernate:hibernate-core:$hibernateVersion"
 	runtime "net.java.dev.jna:jna:$jnaVersion"
 	runtime "org.elasticsearch:elasticsearch:$elasticSearchVersion"
 	runtime "org.elasticsearch.client:elasticsearch-rest-high-level-client:$elasticSearchVersion"
 	
-    runtime ("com.ayoza.feline-tracker-lib:feline-tracker-core:$felineTrackerModelVersion") {
-            exclude module: 'feline-tracker-model'
-    }
+    runtime ("com.ayoza.feline-tracker-lib:feline-tracker-core:$felineTrackerCoreVersion")
+    compile "com.ayoza.feline-tracker-lib:feline-tracker-api:$felineTrackerCoreVersion"
     
     providedRuntime "javax.servlet:javax.servlet-api:$servletApiVersion"
-   
-    runtime "com.ayoza.feline-tracker-lib:feline-tracker-model:$felineTrackerModelVersion"
-	
-	compile "com.ayoza.feline-tracker-lib:feline-tracker-api:$felineTrackerModelVersion"
 	
    	compileOnly "org.projectlombok:lombok:$lombokVersion"     
     apt "org.projectlombok:lombok:$lombokVersion" 	
