@@ -71,7 +71,7 @@ public class TrackV1Ctrl {
 	@Auditable
 	@RequestMapping(value = "", method = GET, produces = APPLICATION_JSON_VALUE, headers="Accept=*/*")
     @ResponseBody
-    public List<RouteDTO> getListOfRoutesV1(	@RequestParam(value="trackerId", required=false) Integer trackerId,
+    public List<RouteDTO> getListOfRoutesV1(	@RequestParam(value="trackerId", required=false) String simPhone,
     											@RequestParam(value="startDateFrom", required=false) @DateTimeFormat(pattern = "yyyyMMddHHmmss") Calendar from,
     											@RequestParam(value="startDateTo", required=false)  @DateTimeFormat(pattern = "yyyyMMddHHmmss") Calendar to,
     											@RequestParam(value="orderAscDesc") String orderAscDesc,
@@ -79,7 +79,7 @@ public class TrackV1Ctrl {
     											@RequestParam(value="numRegistersPerPage") Integer numRegistersPerPage
     					) {
 		
-		int userId = accessControl.getUserIdFromSecurityContext();
+		String email = accessControl.getUserIdFromSecurityContext();
 		
 		Instant startDateFrom = ofNullable(from).map(Calendar::toInstant).orElse(null);
 		Instant startDateTo = ofNullable(to).map(Calendar::toInstant).orElse(null);
@@ -88,10 +88,10 @@ public class TrackV1Ctrl {
 											orderAscDesc,
 												page, numRegistersPerPage);
 		
-		PageRequest pageRequest = new PageRequest(page, numRegistersPerPage, Sort.Direction.valueOf(orderAscDesc), ORDER_BY_START_DATE);
+		PageRequest pageRequest = PageRequest.of(page, numRegistersPerPage, Sort.Direction.valueOf(orderAscDesc), ORDER_BY_START_DATE);
 		
-		return routeMgr.getRoutes(userId,
-									ofNullable(trackerId),
+		return routeMgr.getRoutes(email,
+									ofNullable(simPhone),
 										startDateFrom, startDateTo,
 											pageRequest);
 	}
@@ -99,10 +99,10 @@ public class TrackV1Ctrl {
 	@Auditable
 	@RequestMapping(value = "/last", method = GET, produces = APPLICATION_JSON_VALUE, headers="Accept=*/*")
 	@ResponseBody
-	public RouteDTO getLastRouteV1(@RequestParam(value="trackerId", required=false) Integer trackerId) {
-		int userId = accessControl.getUserIdFromSecurityContext();
+	public RouteDTO getLastRouteV1(@RequestParam(value="trackerId", required=false) String simPhone) {
+		String email = accessControl.getUserIdFromSecurityContext();
 		
-		return routeMgr.getLastRoute(userId, ofNullable(trackerId))
+		return routeMgr.getLastRoute(email, ofNullable(simPhone))
 				.orElseThrow(() -> FelineNoContentException.Exceptions.NO_CONTENT.getException());
 	}
 	
@@ -111,7 +111,7 @@ public class TrackV1Ctrl {
 	@ResponseBody
 	public List<PointDTO> getListOfPointsByRouteV1(@PathVariable(value = "trackId") UUID trackId) {
 		return pointMgr
-				.getPointsByTraRouteIdAndAppUserId(trackId, accessControl.getUserIdFromSecurityContext(), empty());
+				.getPointsByTraRouteIdAndEmail(trackId, accessControl.getUserIdFromSecurityContext(), empty());
 	}
 }
 

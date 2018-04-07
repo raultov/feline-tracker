@@ -8,6 +8,8 @@ import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.apache.commons.lang.RandomStringUtils.randomNumeric;
+import static org.apache.commons.lang.RandomStringUtils.randomAlphanumeric;
 
 import java.util.Calendar;
 import java.util.List;
@@ -34,9 +36,9 @@ import ayoza.com.feline.api.managers.tracker.RouteMgr;
 @RunWith(MockitoJUnitRunner.class)
 public class TrackV1CtrlTest {
 	
-	private final static int USER_ID = 1; 
+	private final String username = randomAlphanumeric(10);
 	private final static UUID ROUTE_ID = UUID.randomUUID();
-	private final static int TRACKER_ID = 1;
+	private final String simPhone = randomNumeric(10);
 	private final static Optional<Integer> EMPTY_SIZE = empty();
 	
 	private final static UUID POINT_ID = UUID.randomUUID();
@@ -96,12 +98,12 @@ public class TrackV1CtrlTest {
 
 	@Test
 	public void givenGeoLocationParamenters_whenAddPoint_thenPointIsAdded() {
-		when(accessControl.getUserIdFromSecurityContext()).thenReturn(USER_ID);
+		when(accessControl.getUserIdFromSecurityContext()).thenReturn(username);
 		
 		trackV1Ctrl.addPointV1(GGA_LATITUDE, GGA_LONGITUDE, ACCURACY, ALTITUDE);
 		
 		verify(accessControl).getUserIdFromSecurityContext();
-		verify(trackService).addPoint(forgePointDTO(null), USER_ID);
+		verify(trackService).addPoint(forgePointDTO(null), username);
 	}
 	
 	@Test(expected = ParserTrackerException.class)
@@ -131,19 +133,19 @@ public class TrackV1CtrlTest {
 	
 	@Test
 	public void shouldReturnListOfRoutes() {
-		when(accessControl.getUserIdFromSecurityContext()).thenReturn(USER_ID);
+		when(accessControl.getUserIdFromSecurityContext()).thenReturn(username);
 		PageRequest pageRequest = getPageRequest(PAGE, NUM_REGS_PER_PAGE, ORDER_DESC);
-		when(routeMgr.getRoutes(USER_ID, empty(), FROM.toInstant(), TO.toInstant(),pageRequest)).thenReturn(LIST_ROUTE_DTO);
+		when(routeMgr.getRoutes(username, empty(), FROM.toInstant(), TO.toInstant(),pageRequest)).thenReturn(LIST_ROUTE_DTO);
 		
 		trackV1Ctrl.getListOfRoutesV1(null, FROM, TO, ORDER_DESC, PAGE, NUM_REGS_PER_PAGE);
 	
 		verify(accessControl).getUserIdFromSecurityContext();
-		verify(routeMgr).getRoutes(USER_ID, empty(), FROM.toInstant(), TO.toInstant(), pageRequest);
+		verify(routeMgr).getRoutes(username, empty(), FROM.toInstant(), TO.toInstant(), pageRequest);
 	}
 	
 	@Test(expected = ParserTrackerException.class)
 	public void listOfRoutesShouldThrowParserTrackerException() {
-		when(accessControl.getUserIdFromSecurityContext()).thenReturn(USER_ID);
+		when(accessControl.getUserIdFromSecurityContext()).thenReturn(username);
 		doThrow(new ParserTrackerException(1, "", new Exception())).when(trackValidator).validateGetTracks(INVALID_FROM.toInstant(), TO.toInstant(), ORDER_DESC, PAGE, NUM_REGS_PER_PAGE);
 		
 		trackV1Ctrl.getListOfRoutesV1(null, INVALID_FROM, TO, ORDER_DESC, PAGE, NUM_REGS_PER_PAGE);
@@ -151,40 +153,40 @@ public class TrackV1CtrlTest {
 	
 	@Test(expected = FelineNoContentException.class)
 	public void listOfRoutesShouldThrowFelineNoContentException() {
-		when(accessControl.getUserIdFromSecurityContext()).thenReturn(USER_ID);
+		when(accessControl.getUserIdFromSecurityContext()).thenReturn(username);
 		PageRequest pageRequest = getPageRequest(PAGE, NUM_REGS_PER_PAGE, ORDER_DESC);
-		doThrow(FelineNoContentException.Exceptions.NO_CONTENT.getException()).when(routeMgr).getRoutes(USER_ID, empty(), FROM.toInstant(), TO.toInstant(), pageRequest);
+		doThrow(FelineNoContentException.Exceptions.NO_CONTENT.getException()).when(routeMgr).getRoutes(username, empty(), FROM.toInstant(), TO.toInstant(), pageRequest);
 		
 		trackV1Ctrl.getListOfRoutesV1(null, FROM, TO, ORDER_DESC, PAGE, NUM_REGS_PER_PAGE);
 	}
 	
 	@Test
 	public void shouldReturnListOfRoutesWhenNonNullTrackerId() {
-		when(accessControl.getUserIdFromSecurityContext()).thenReturn(USER_ID);
+		when(accessControl.getUserIdFromSecurityContext()).thenReturn(username);
 		PageRequest pageRequest = getPageRequest(PAGE, NUM_REGS_PER_PAGE, ORDER_DESC);
-		when(routeMgr.getRoutes(USER_ID, of(TRACKER_ID), FROM.toInstant(), TO.toInstant(),pageRequest)).thenReturn(LIST_ROUTE_DTO);
+		when(routeMgr.getRoutes(username, of(simPhone), FROM.toInstant(), TO.toInstant(),pageRequest)).thenReturn(LIST_ROUTE_DTO);
 		
-		trackV1Ctrl.getListOfRoutesV1(TRACKER_ID, FROM, TO, ORDER_DESC, PAGE, NUM_REGS_PER_PAGE);
+		trackV1Ctrl.getListOfRoutesV1(simPhone, FROM, TO, ORDER_DESC, PAGE, NUM_REGS_PER_PAGE);
 	
 		verify(accessControl).getUserIdFromSecurityContext();
-		verify(routeMgr).getRoutes(USER_ID, of(TRACKER_ID), FROM.toInstant(), TO.toInstant(), pageRequest);
+		verify(routeMgr).getRoutes(username, of(simPhone), FROM.toInstant(), TO.toInstant(), pageRequest);
 	}
 	
 	@Test(expected = ParserTrackerException.class)
 	public void shouldThrowParserTrackerExceptionWhenNonNullTrackerId() {
-		when(accessControl.getUserIdFromSecurityContext()).thenReturn(USER_ID);
+		when(accessControl.getUserIdFromSecurityContext()).thenReturn(username);
 		doThrow(new ParserTrackerException(1, "", new Exception())).when(trackValidator).validateGetTracks(INVALID_FROM.toInstant(), TO.toInstant(), ORDER_DESC, PAGE, NUM_REGS_PER_PAGE);
 		
-		trackV1Ctrl.getListOfRoutesV1(TRACKER_ID, INVALID_FROM, TO, ORDER_DESC, PAGE, NUM_REGS_PER_PAGE);
+		trackV1Ctrl.getListOfRoutesV1(simPhone, INVALID_FROM, TO, ORDER_DESC, PAGE, NUM_REGS_PER_PAGE);
 	}
 	
 	@Test(expected = FelineNoContentException.class)
 	public void shouldThrowFelineNoContentExceptionWhenNonNullTrackerId() {
-		when(accessControl.getUserIdFromSecurityContext()).thenReturn(USER_ID);
+		when(accessControl.getUserIdFromSecurityContext()).thenReturn(username);
 		PageRequest pageRequest = getPageRequest(PAGE, NUM_REGS_PER_PAGE, ORDER_DESC);
-		doThrow(FelineNoContentException.Exceptions.NO_CONTENT.getException()).when(routeMgr).getRoutes(USER_ID, of(TRACKER_ID), FROM.toInstant(), TO.toInstant(), pageRequest);
+		doThrow(FelineNoContentException.Exceptions.NO_CONTENT.getException()).when(routeMgr).getRoutes(username, of(simPhone), FROM.toInstant(), TO.toInstant(), pageRequest);
 		
-		trackV1Ctrl.getListOfRoutesV1(TRACKER_ID, FROM, TO, ORDER_DESC, PAGE, NUM_REGS_PER_PAGE);
+		trackV1Ctrl.getListOfRoutesV1(simPhone, FROM, TO, ORDER_DESC, PAGE, NUM_REGS_PER_PAGE);
 	}
 	
 	private PageRequest getPageRequest(int page, int numRegistersPerPage, String orderAscDesc) {
@@ -203,8 +205,8 @@ public class TrackV1CtrlTest {
 	
 	@Test
 	public void shouldReturnListOfPoints() {
-		when(accessControl.getUserIdFromSecurityContext()).thenReturn(USER_ID);
-		when(pointMgr.getPointsByTraRouteIdAndAppUserId(ROUTE_ID, USER_ID, EMPTY_SIZE)).thenReturn(LIST_POINT_DTO);
+		when(accessControl.getUserIdFromSecurityContext()).thenReturn(username);
+		when(pointMgr.getPointsByTraRouteIdAndEmail(ROUTE_ID, username, EMPTY_SIZE)).thenReturn(LIST_POINT_DTO);
 		
 		List<PointDTO> points = trackV1Ctrl.getListOfPointsByRouteV1(ROUTE_ID);
 		
@@ -214,8 +216,8 @@ public class TrackV1CtrlTest {
 	
 	@Test(expected = FelineNoContentException.class)
 	public void shouldThrowNoContentException() {
-		when(accessControl.getUserIdFromSecurityContext()).thenReturn(USER_ID);
-		doThrow(FelineNoContentException.Exceptions.NO_CONTENT.getException()).when(pointMgr).getPointsByTraRouteIdAndAppUserId(ROUTE_ID, USER_ID, EMPTY_SIZE);
+		when(accessControl.getUserIdFromSecurityContext()).thenReturn(username);
+		doThrow(FelineNoContentException.Exceptions.NO_CONTENT.getException()).when(pointMgr).getPointsByTraRouteIdAndEmail(ROUTE_ID, username, EMPTY_SIZE);
 		
 		trackV1Ctrl.getListOfPointsByRouteV1(ROUTE_ID);
 	}
@@ -232,8 +234,8 @@ public class TrackV1CtrlTest {
 	
 	@Test
 	public void givenAppUser_whenGetLastRoute_thenReturnsLastRoute() {
-		when(accessControl.getUserIdFromSecurityContext()).thenReturn(USER_ID);
-		when(routeMgr.getLastRoute(USER_ID, empty())).thenReturn(of(ROUTE_DTO));
+		when(accessControl.getUserIdFromSecurityContext()).thenReturn(username);
+		when(routeMgr.getLastRoute(username, empty())).thenReturn(of(ROUTE_DTO));
 		
 		RouteDTO routeDTO = trackV1Ctrl.getLastRouteV1(null);
 		
@@ -243,18 +245,18 @@ public class TrackV1CtrlTest {
 	
 	@Test(expected = FelineNoContentException.class)
 	public void givenNoRouteForAppUser_whenGetLastRoute_thenThrowsException() {
-		when(accessControl.getUserIdFromSecurityContext()).thenReturn(USER_ID);
-		when(routeMgr.getLastRoute(USER_ID, empty())).thenReturn(empty());
+		when(accessControl.getUserIdFromSecurityContext()).thenReturn(username);
+		when(routeMgr.getLastRoute(username, empty())).thenReturn(empty());
 		
 		trackV1Ctrl.getLastRouteV1(null);
 	}
 	
 	@Test
 	public void givenAppUserAndTraUser_whenGetLastRoute_thenReturnsLastRoute() {
-		when(accessControl.getUserIdFromSecurityContext()).thenReturn(USER_ID);
-		when(routeMgr.getLastRoute(USER_ID, of(TRACKER_ID))).thenReturn(of(ROUTE_DTO));
+		when(accessControl.getUserIdFromSecurityContext()).thenReturn(username);
+		when(routeMgr.getLastRoute(username, of(simPhone))).thenReturn(of(ROUTE_DTO));
 		
-		RouteDTO routeDTO = trackV1Ctrl.getLastRouteV1(TRACKER_ID);
+		RouteDTO routeDTO = trackV1Ctrl.getLastRouteV1(simPhone);
 		
 		assertTrue(routeDTO != null);
 		assertEquals(ROUTE_DTO, routeDTO);
@@ -262,9 +264,9 @@ public class TrackV1CtrlTest {
 	
 	@Test(expected = FelineNoContentException.class)
 	public void givenNoRouteForAppUserAndTraUser_whenGetLastRoute_thenThrowsException() {
-		when(accessControl.getUserIdFromSecurityContext()).thenReturn(USER_ID);
-		when(routeMgr.getLastRoute(USER_ID, of(TRACKER_ID))).thenReturn(empty());
+		when(accessControl.getUserIdFromSecurityContext()).thenReturn(username);
+		when(routeMgr.getLastRoute(username, of(simPhone))).thenReturn(empty());
 		
-		trackV1Ctrl.getLastRouteV1(TRACKER_ID);
+		trackV1Ctrl.getLastRouteV1(simPhone);
 	}
 }

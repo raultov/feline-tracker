@@ -1,6 +1,5 @@
  package com.ayoza.feline.security;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -16,9 +15,7 @@ import org.springframework.security.oauth2.provider.approval.DefaultUserApproval
 import org.springframework.security.oauth2.provider.token.AuthorizationServerTokenServices;
 import org.springframework.security.oauth2.provider.token.TokenStore;
 
-import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
-import lombok.experimental.FieldDefaults;
+import lombok.RequiredArgsConstructor;
 
 @Configuration
 public class OAuth2ServerConfig {
@@ -70,15 +67,14 @@ public class OAuth2ServerConfig {
 
     @Configuration
     @EnableAuthorizationServer
-    @AllArgsConstructor(onConstructor=@__({@Autowired}))
-    @FieldDefaults(level=AccessLevel.PRIVATE)
+    @RequiredArgsConstructor
     protected static class AuthorizationServerConfiguration extends AuthorizationServerConfigurerAdapter {
 
-        AuthenticationManager authenticationManager;
+        private final AuthenticationManager authenticationManager;
         
-        TokenStore tokenStore;
+        private final TokenStore tokenStore;
         
-        AuthorizationServerTokenServices defaultTokenServices;
+        private final AuthorizationServerTokenServices defaultTokenServices;
 
         @Override
         public void configure(ClientDetailsServiceConfigurer clients) throws Exception {

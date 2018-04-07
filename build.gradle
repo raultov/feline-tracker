@@ -1,6 +1,6 @@
 buildscript {
 	ext {
-		springBootVersion = '2.0.0.RELEASE'
+		springBootVersion = '2.0.1.RELEASE'
 	}
 	
 	repositories {
@@ -26,8 +26,6 @@ apply plugin: 'net.ltgt.apt'
 apply plugin: 'io.spring.dependency-management'
 
 ext {
-    springSecurityVersion = '5.0.3.RELEASE'
-    oauth2Version = '2.3.0.RELEASE'
     springTxVersion = '5.0.4.RELEASE'
     felineTrackerModelVersion = '1.0'
     hibernateVersion = '5.2.15.Final'
@@ -37,7 +35,8 @@ ext {
     jnaVersion = '4.5.1'
     elasticSearchVersion = '6.1.1'
     servletApiVersion = '4.0.0'
-    springCloudVersion = 'Finchley.M8'
+    springCloudVersion = 'Finchley.M9'
+    commonsLangVersion = '2.6'
 }
 
 group = 'com.ayoza'
@@ -64,7 +63,9 @@ dependencies {
 	compile('org.springframework.boot:spring-boot-starter-jetty')
 	compile('org.springframework.boot:spring-boot-starter-security')
 	compile('org.springframework.cloud:spring-cloud-starter-oauth2')
-	
+	compile('org.springframework.boot:spring-boot-starter-data-jpa')
+	compile('org.springframework.boot:spring-boot-starter-data-redis')
+
 	compile "org.springframework:spring-tx:$springTxVersion"
 	
 	runtime "org.hibernate:hibernate-core:$hibernateVersion"
@@ -86,8 +87,9 @@ dependencies {
     apt "org.projectlombok:lombok:$lombokVersion" 	
 	
 	testCompile('org.springframework.boot:spring-boot-starter-test') 
-	compile "pl.pragmatists:JUnitParams:$jUnitsParamsversion"
-	compile "org.assertj:assertj-core:$assertCoreVersion"
+	testCompile "commons-lang:commons-lang:$commonsLangVersion"
+	testCompile "pl.pragmatists:JUnitParams:$jUnitsParamsversion"
+	testCompile "org.assertj:assertj-core:$assertCoreVersion"
 }
 
 dependencyManagement {
