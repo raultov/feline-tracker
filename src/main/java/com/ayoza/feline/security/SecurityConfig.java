@@ -20,7 +20,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.provider.token.AuthorizationServerTokenServices;
 import org.springframework.security.oauth2.provider.token.DefaultTokenServices;
 import org.springframework.security.oauth2.provider.token.TokenStore;
-import org.springframework.security.oauth2.provider.token.store.InMemoryTokenStore;
+import org.springframework.security.oauth2.provider.token.store.redis.RedisTokenStore;
 
 import ayoza.com.feline.api.entities.tracker.dto.PointDTO;
 import ayoza.com.feline.api.managers.UserServicesMgr;
@@ -85,8 +85,8 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     
 	@Bean
 	public TokenStore tokenStore(RedisConnectionFactory redisConnectionFactory) {
-		return new InMemoryTokenStore();
-		//return new RedisTokenStore(redisConnectionFactory);
+		//return new InMemoryTokenStore();
+		return new RedisTokenStore(redisConnectionFactory);
 	}
 
     /**
