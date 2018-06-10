@@ -34,17 +34,17 @@ public class OAuth2ServerConfig {
         @Override
         public void configure(HttpSecurity http) throws Exception {
             // @formatter:off
-			http
-				.requestMatchers().antMatchers(
-											   "/oauth/token/revoke",
-											   "/v1/tracks/**",
-											   "/v1/users/**",
-											   "/v1/trackers/**",
-											   "/cache/**"
-											   )
-				.and()
-			.authorizeRequests()
-                .antMatchers(HttpMethod.POST, "/oauth/token/revoke").access("#oauth2.hasScope('general') and hasRole('ROLE_USER')")
+            http.requestMatchers().antMatchers("/oauth/token/revoke",
+                                               "/actuator/**",
+                                               "/v1/tracks/**",
+                                               "/v1/users/**",
+                                               "/v1/trackers/**",
+                                               "/cache/**")
+                    .and()
+                    .authorizeRequests()
+                .antMatchers(HttpMethod.POST, "/oauth/token/revoke").access("#oauth2.hasScope('general') and hasRole('ROLE_APP_ADMIN')")
+                .antMatchers(HttpMethod.DELETE, "/cache/**").access("#oauth2.hasScope('general') and hasRole('ROLE_APP_ADMIN')")
+                .antMatchers(HttpMethod.GET, "/actuator/**").access("#oauth2.hasScope('general') and hasRole('ROLE_APP_ADMIN')")
                 
                 .antMatchers(HttpMethod.POST, "/v1/tracks").access("#oauth2.hasScope('general') and hasRole('ROLE_TRA_USER')")
                 .antMatchers(HttpMethod.GET, "/v1/tracks").access("#oauth2.hasScope('general') and hasRole('ROLE_APP_USER')")
@@ -54,8 +54,6 @@ public class OAuth2ServerConfig {
                 .antMatchers(HttpMethod.GET, "/v1/users").access("#oauth2.hasScope('general') and hasRole('ROLE_APP_USER')")
                 
                 .antMatchers(HttpMethod.GET, "/v1/trackers").access("#oauth2.hasScope('general') and hasRole('ROLE_APP_USER')")
-                
-                .antMatchers(HttpMethod.DELETE, "/cache/**").access("#oauth2.hasScope('general') and hasRole('ROLE_APP_ADMIN')")
             .and()
             	.csrf().disable()
             	.cors().disable()
@@ -78,14 +76,14 @@ public class OAuth2ServerConfig {
 
         @Override
         public void configure(ClientDetailsServiceConfigurer clients) throws Exception {
-        	
+
             // @formatter:off
-			clients.inMemory()
+            clients.inMemory()
                     .withClient("client-with-refresh-token")
-			 			.resourceIds(RESOURCE_1_ID)
-			 			.authorizedGrantTypes("password", "client_credentials", "refresh_token")
-			 			.authorities("ROLE_CLIENT")
-			 			.scopes("general")
+                    .resourceIds(RESOURCE_1_ID)
+                    .authorizedGrantTypes("password", "client_credentials", "refresh_token")
+                    .authorities("ROLE_CLIENT")
+                    .scopes("general")
                         .secret("$2a$04$SGPmvIrMa50tRNXr2z5OO.mdOpgzrQurPdrzy2D.VimA5vUxDJHEK")
                         .and()
             ;

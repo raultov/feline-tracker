@@ -33,7 +33,7 @@ ext {
     jnaVersion = '4.5.1'
     elasticSearchVersion = '6.1.1'
     servletApiVersion = '4.0.0'
-    springCloudVersion = 'Finchley.M9'
+    springCloudVersion = 'Finchley.RC2'
     commonsLangVersion = '2.6'
 }
 
@@ -61,6 +61,7 @@ dependencies {
 	compile('org.springframework.boot:spring-boot-starter-jetty')
 	compile('org.springframework.boot:spring-boot-starter-security')
 	compile('org.springframework.cloud:spring-cloud-starter-oauth2')
+	compile('org.springframework.cloud:spring-cloud-starter-config')
 	compile('org.springframework.boot:spring-boot-starter-data-redis')
 	
 	runtime "net.java.dev.jna:jna:$jnaVersion"

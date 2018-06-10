@@ -1,0 +1,20 @@
+server:
+  servlet:
+    contextPath: /feline-rest
+  port: 8080
+  jetty:
+    acceptors: -1
+    max-http-post-size: 5242880
+    selectors: -1
+
+logging:
+  level:
+    org:
+      springframework:
+        web: TRACE
+        
+management:
+  endpoints:
+    web:
+      exposure:
+        include: refresh,bus-refresh        

@@ -8,6 +8,7 @@ import java.time.Instant;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cloud.context.config.annotation.RefreshScope;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
@@ -19,6 +20,7 @@ import ayoza.com.feline.api.managers.tracker.TrackerMgr;
 import lombok.RequiredArgsConstructor;
 
 @Service
+@RefreshScope
 @RequiredArgsConstructor
 class TrackService {
 	
@@ -30,7 +32,7 @@ class TrackService {
 	
 	private final TrackerMgr trackerMgr;
 	
-	@Value("${threshold.create.new.route.in.minutes}")
+	@Value("${routes.thresholds.create-new-route-in-minutes}")
 	private int thresholdCreateNewRoute;
 	
 	@Async

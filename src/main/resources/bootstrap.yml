@@ -1,0 +1,8 @@
+spring:
+  application:
+    name: feline
+  profiles:
+    active: dev 
+  cloud:
+    config:
+      uri: ${config.uri:http://localhost:8888}
