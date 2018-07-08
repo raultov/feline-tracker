@@ -39,7 +39,8 @@ public class OAuth2ServerConfig {
                                                "/v1/tracks/**",
                                                "/v1/users/**",
                                                "/v1/trackers/**",
-                                               "/cache/**")
+                                               "/cache/**"
+                                               )
                     .and()
                     .authorizeRequests()
                 .antMatchers(HttpMethod.POST, "/oauth/token/revoke").access("#oauth2.hasScope('general') and hasRole('ROLE_APP_ADMIN')")
@@ -54,9 +55,16 @@ public class OAuth2ServerConfig {
                 .antMatchers(HttpMethod.GET, "/v1/users").access("#oauth2.hasScope('general') and hasRole('ROLE_APP_USER')")
                 
                 .antMatchers(HttpMethod.GET, "/v1/trackers").access("#oauth2.hasScope('general') and hasRole('ROLE_APP_USER')")
+
             .and()
-            	.csrf().disable()
-            	.cors().disable()
+                .requestMatchers().antMatchers("/v2/tracks/**")
+                    .and()
+                    .authorizeRequests()
+                .antMatchers(HttpMethod.POST, "/v2/tracks").hasAuthority("ROLE_TRA_USER")
+            .and()
+                .csrf().disable()
+                .cors().disable()
+                .httpBasic()
                 ;                
 
             // @formatter:off
