@@ -3,57 +3,65 @@ package com.ayoza.feline.app.web.rest.v1.tracker;
 import static com.ayoza.feline.web.rest.v1.exceptions.ParserTrackerException.WRONG_GPGGA_FORMAT;
 import static com.ayoza.feline.web.rest.v1.exceptions.ParserTrackerException.WRONG_GPGGA_FORMAT_MSG;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+
 import com.ayoza.feline.web.rest.v1.exceptions.ParserTrackerException;
 
 final class TrackerUtils {
-	
-	private static final double MINUTES = 60.0;
-	private static final double SIGN_N_E = 1.0;
-	private static final double SIGN_S_W = -1.0;
-	private static final int PLACES_N_S = 2;
-	private static final int PLACES_E_W = 3;
 
 	private TrackerUtils() {
-		throw new UnsupportedOperationException("Default constructor cannot be invoked");
+		throw new UnsupportedOperationException("Default constructor should not be invoked");
 	}
 
 	static Double convertToDecimalDegrees(String gga) throws ParserTrackerException {
-		Double degrees, minutes, sign;
+		double sign;
+		double decimal;
 		char cardinalPoint;
-		int places;
-		
+
 		try {
-			cardinalPoint = gga.charAt(gga.length()-1);		
-			switch (cardinalPoint) {
-				case 'N':
-					sign = SIGN_N_E;
-					places = PLACES_N_S;
-					break;
-				case 'E':
-					sign = SIGN_N_E;
-					places = PLACES_E_W;
-					break;
-					
-				case 'S':
-					sign = SIGN_S_W;
-					places = PLACES_N_S;
-					break;
-				case 'W':
-					sign = SIGN_S_W;
-					places = PLACES_E_W;
-					break;
-					
-				default:
-					throw new ParserTrackerException(WRONG_GPGGA_FORMAT, WRONG_GPGGA_FORMAT_MSG, new Exception(WRONG_GPGGA_FORMAT_MSG));
+			cardinalPoint = gga.charAt(gga.length()-1);	
+			if (cardinalPoint == 'N' || cardinalPoint == 'E') {
+			    sign = 1.0;
+			} else if (cardinalPoint == 'S' || cardinalPoint == 'W') {
+			    sign = -1.0;
+			} else {
+			    throw new ParserTrackerException(WRONG_GPGGA_FORMAT, WRONG_GPGGA_FORMAT_MSG, new Exception(WRONG_GPGGA_FORMAT_MSG));   
 			}
 			
-			degrees = new Double(gga.substring(0, places));
-			minutes = new Double(gga.substring(places, gga.length()-1));
-			minutes /= MINUTES;
-		} catch(NumberFormatException | IndexOutOfBoundsException | NullPointerException nfe) {
-			throw new ParserTrackerException(WRONG_GPGGA_FORMAT, WRONG_GPGGA_FORMAT_MSG, nfe);
+			decimal = toDecimal(new Double(gga.substring(0, gga.length()-1)));
+			
+		} catch(Exception e) {
+			throw new ParserTrackerException(WRONG_GPGGA_FORMAT, WRONG_GPGGA_FORMAT_MSG, e);
 		}
 		
-		return (degrees + minutes) * sign;
+		return decimal * sign;
 	}
+	
+    private static double toDecimal(double d) {
+        BigDecimal degrees = getDegrees(d);
+        BigDecimal minutesAndSeconds = getMinutes(d);
+        BigDecimal decimal = degrees.add(minutesAndSeconds).setScale(4, RoundingMode.HALF_EVEN);
+
+        return decimal.doubleValue();
+    }
+
+    private static BigDecimal getDegrees(double d) {
+        BigDecimal bd = new BigDecimal(d);
+        bd = bd.movePointLeft(2);
+
+        return new BigDecimal(bd.intValue());
+    }
+
+    private static BigDecimal getMinutes(double d) {
+        BigDecimal bd = new BigDecimal(d);
+        bd = bd.movePointLeft(2);
+
+        BigDecimal minutesBd = bd.subtract(new BigDecimal(bd.intValue()));
+        minutesBd = minutesBd.movePointRight(2);
+
+        BigDecimal minutes = new BigDecimal((minutesBd.doubleValue() * 100) / 60).movePointLeft(2);
+
+        return minutes;
+    }
 }
