@@ -24,7 +24,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.ayoza.feline.app.web.rest.v1.access.AccessControl;
 
-import ayoza.com.feline.api.audit.Auditable;
 import ayoza.com.feline.api.entities.tracker.dto.PointDTO;
 import ayoza.com.feline.api.entities.tracker.dto.RouteDTO;
 import ayoza.com.feline.api.exceptions.FelineNoContentException;
@@ -49,7 +48,6 @@ public class TrackV1Ctrl {
 	
 	private final TrackService trackService;
 
-	@Auditable
 	@RequestMapping(value = "", method = POST, produces = APPLICATION_JSON_VALUE, consumes = APPLICATION_FORM_URLENCODED_VALUE, headers="Accept=*/*")
     @ResponseBody
     public void addPointV1(
@@ -68,7 +66,6 @@ public class TrackV1Ctrl {
 		trackService.addPoint(pointDTO, accessControl.getUserIdFromSecurityContext());
 	}
 	
-	@Auditable
 	@RequestMapping(value = "", method = GET, produces = APPLICATION_JSON_VALUE, headers="Accept=*/*")
     @ResponseBody
     public List<RouteDTO> getListOfRoutesV1(	@RequestParam(value="simPhone", required=false) String simPhone,
@@ -96,7 +93,6 @@ public class TrackV1Ctrl {
 											pageRequest);
 	}
 	
-	@Auditable
 	@RequestMapping(value = "/last", method = GET, produces = APPLICATION_JSON_VALUE, headers="Accept=*/*")
 	@ResponseBody
 	public RouteDTO getLastRouteV1(@RequestParam(value="simPhone", required=false) String simPhone) {
@@ -106,7 +102,6 @@ public class TrackV1Ctrl {
 				.orElseThrow(() -> FelineNoContentException.Exceptions.NO_CONTENT.getException());
 	}
 	
-	@Auditable
 	@RequestMapping(value = "/{trackId}/points", method = GET, produces = APPLICATION_JSON_VALUE, headers = "Accept=*/*")
 	@ResponseBody
 	public List<PointDTO> getListOfPointsByRouteV1(@PathVariable(value = "trackId") UUID trackId) {

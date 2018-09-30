@@ -12,7 +12,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
-import ayoza.com.feline.api.audit.Auditable;
 import ayoza.com.feline.api.entities.tracker.dto.PointDTO;
 import lombok.RequiredArgsConstructor;
 
@@ -25,7 +24,6 @@ public class TrackV2Ctrl {
     
     private final TrackService trackService;
 
-    @Auditable
     @RequestMapping(value = "", method = POST, produces = APPLICATION_JSON_VALUE, consumes = APPLICATION_FORM_URLENCODED_VALUE, headers="Accept=*/*")
     @ResponseBody
     public void addPointV1(
