@@ -1,0 +1,32 @@
+version: '3.3'
+services:
+  rabbitmq:
+    image: rabbitmq:3.7.4-management
+    ports:
+      - "15672:15672"
+      - "5672:5672"
+    volumes:
+      - rabbitmq:/var/lib/rabbitmq
+  redis:
+    image: redis:latest
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis:/var/lib/redis
+  config-server:
+    image: raultov/config-server:latest
+    ports:
+      - "8888:8888"
+    volumes:
+      - /home/raul/config:/resources/config
+    network_mode: host
+  feline-tracker:
+    image: nuckito:5000/raultov/feline-tracker:latest
+    ports:
+      - "8080:8080"
+    network_mode: host
+
+volumes:
+  rabbitmq:
+  redis:
+
