@@ -1,5 +1,10 @@
 version: '3.3'
 services:
+  registrydev:
+    image: registry:2
+    ports:
+      - "5000:5000"
+    restart: always
   rabbitmq:
     image: rabbitmq:3.7.4-management
     ports:
