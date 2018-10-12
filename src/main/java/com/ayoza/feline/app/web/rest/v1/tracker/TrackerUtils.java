@@ -2,6 +2,7 @@ package com.ayoza.feline.app.web.rest.v1.tracker;
 
 import static com.ayoza.feline.web.rest.v1.exceptions.ParserTrackerException.WRONG_GPGGA_FORMAT;
 import static com.ayoza.feline.web.rest.v1.exceptions.ParserTrackerException.WRONG_GPGGA_FORMAT_MSG;
+import static java.lang.Double.parseDouble;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -29,7 +30,7 @@ final class TrackerUtils {
 			    throw new ParserTrackerException(WRONG_GPGGA_FORMAT, WRONG_GPGGA_FORMAT_MSG, new Exception(WRONG_GPGGA_FORMAT_MSG));   
 			}
 			
-			decimal = toDecimal(new Double(gga.substring(0, gga.length()-1)));
+			decimal = toDecimal(parseDouble(gga.substring(0, gga.length()-1)));
 			
 		} catch(Exception e) {
 			throw new ParserTrackerException(WRONG_GPGGA_FORMAT, WRONG_GPGGA_FORMAT_MSG, e);
