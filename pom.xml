@@ -201,7 +201,7 @@
 		        <name>raultov/${project.build.finalName}</name>
 		        <build>
 		          <from>openjdk:10.0.2</from>
-		          <entryPoint> java --illegal-access=deny -Dconfig.uri=http://nuckito:8888 -Dspring.profiles.active=dev -jar /application/${project.build.finalName}.jar </entryPoint>
+		          <entryPoint> java --illegal-access=deny -Dconfig.uri=http://config-server:8888 -Dspring.profiles.active=dev -jar /application/${project.build.finalName}.jar </entryPoint>
 		          <assembly>
 		            <basedir>/application</basedir>
 		            <descriptorRef>artifact</descriptorRef>
