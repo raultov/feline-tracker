@@ -30,27 +30,27 @@ import lombok.RequiredArgsConstructor;
 @EnableWebSecurity
 @RequiredArgsConstructor
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
-	
-	private final UserServicesMgr userServicesMgr;
+
+    private final UserServicesMgr userServicesMgr;
 
     /**
      * Configures how users will be authenticated.
      */
     @Override
-    protected void configure(AuthenticationManagerBuilder auth) throws Exception {
-    	DaoAuthenticationProvider daoAuthenticationProvider = new DaoAuthenticationProvider();
-    	
-    	daoAuthenticationProvider.setUserDetailsService(userServicesMgr);
+    protected void configure(AuthenticationManagerBuilder auth) {
+        DaoAuthenticationProvider daoAuthenticationProvider = new DaoAuthenticationProvider();
 
-    	auth.authenticationProvider(daoAuthenticationProvider);
+        daoAuthenticationProvider.setUserDetailsService(userServicesMgr);
+
+        auth.authenticationProvider(daoAuthenticationProvider);
     }
-    
+
     @Bean
     @Primary
     public PasswordEncoder passwordEncoder() {
-    	DelegatingPasswordEncoder passwordEncoder = (DelegatingPasswordEncoder) PasswordEncoderFactories.createDelegatingPasswordEncoder();
-    	passwordEncoder.setDefaultPasswordEncoderForMatches(new BCryptPasswordEncoder());
-    	return passwordEncoder;
+        DelegatingPasswordEncoder passwordEncoder = (DelegatingPasswordEncoder) PasswordEncoderFactories.createDelegatingPasswordEncoder();
+        passwordEncoder.setDefaultPasswordEncoderForMatches(new BCryptPasswordEncoder());
+        return passwordEncoder;
     }
 
     /**
@@ -61,33 +61,33 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     public AuthenticationManager authenticationManagerBean() throws Exception {
         return super.authenticationManagerBean();
     }
-    
-	@Bean
-	@Primary
-	public AuthorizationServerTokenServices defaultTokenServices(TokenStore tokenStore) {
-		DefaultTokenServices tokenServices = new DefaultTokenServices();
-		tokenServices.setTokenStore(tokenStore);
-		tokenServices.setSupportRefreshToken(true);
-	    return tokenServices;
-	}
-	
-	  @Primary
-	  @Bean
-	  public RedisTemplate<String,PointDTO> redisTemplate(RedisConnectionFactory connectionFactory) {
-	    RedisTemplate<String, PointDTO> template = new RedisTemplate<String, PointDTO>();
 
-	    template.setKeySerializer(new StringRedisSerializer());
-	    template.setHashKeySerializer(new StringRedisSerializer());
+    @Bean
+    @Primary
+    public AuthorizationServerTokenServices defaultTokenServices(TokenStore tokenStore) {
+        DefaultTokenServices tokenServices = new DefaultTokenServices();
+        tokenServices.setTokenStore(tokenStore);
+        tokenServices.setSupportRefreshToken(true);
+        return tokenServices;
+    }
 
-	    template.setConnectionFactory(connectionFactory);
-	    return template;
-	  }
-    
-	@Bean
-	public TokenStore tokenStore(RedisConnectionFactory redisConnectionFactory) {
-		//return new InMemoryTokenStore();
-		return new RedisTokenStore(redisConnectionFactory);
-	}
+    @Primary
+    @Bean
+    public RedisTemplate<String,PointDTO> redisTemplate(RedisConnectionFactory connectionFactory) {
+        RedisTemplate<String, PointDTO> template = new RedisTemplate<String, PointDTO>();
+
+        template.setKeySerializer(new StringRedisSerializer());
+        template.setHashKeySerializer(new StringRedisSerializer());
+
+        template.setConnectionFactory(connectionFactory);
+        return template;
+    }
+
+    @Bean
+    public TokenStore tokenStore(RedisConnectionFactory redisConnectionFactory) {
+        //return new InMemoryTokenStore();
+        return new RedisTokenStore(redisConnectionFactory);
+    }
 
     /**
      * Configures the application's security.
@@ -95,13 +95,13 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     @Override
     protected void configure(HttpSecurity http) throws Exception {
         http
-        	.sessionManagement().sessionCreationPolicy(SessionCreationPolicy.NEVER)
-        	.and()
-        	//.httpBasic()
-        	.csrf().disable()
-        	.anonymous().disable()     	
-        	.authorizeRequests().anyRequest().authenticated()
+                .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.NEVER)
+                .and()
+                //.httpBasic()
+                .csrf().disable()
+                .anonymous().disable()
+                .authorizeRequests().anyRequest().authenticated()
         ;
     }
-    
+
 }
